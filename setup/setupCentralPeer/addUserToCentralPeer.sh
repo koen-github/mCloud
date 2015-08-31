@@ -30,7 +30,7 @@ echo "Copying pub key file to location..."
 echo $CONTENTS_OF_KEY >> $SSH_LOCATION/authorized_keys
 
 echo "Adding user to central peer"
-
+##TODO specify bash and home location. Copy ssh public key to that directoryy
 sudo useradd $USER_NAME
 
 echo "SSH server restarting"
