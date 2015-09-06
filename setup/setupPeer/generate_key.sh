@@ -1,3 +1,4 @@
+#Step One
 #!/bin/bash
 
 echo "Generating ssh key"
