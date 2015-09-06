@@ -1,7 +1,8 @@
 #STEP TWO
 #/bin/bash
-
+echo "Note: you must be sudo user before running this script"
 echo "Use this shell script to create an encrypted container for the Peer, please look into the code before you run this"
+
 echo "Give full path to install location"
 read INSTALL_LOCATION
 echo "Size of Central image? e.g. 100M"

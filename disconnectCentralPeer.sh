@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sudo umount /home/koen/fileCo1/remoteGit
+sudo umount /home/$USER/fileCo1/remoteGit

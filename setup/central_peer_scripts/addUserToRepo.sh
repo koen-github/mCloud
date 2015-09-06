@@ -17,6 +17,8 @@ echo "$user"
   sudo usermod -G group_$REPO_NAME $user;
 done
 
+mkdir -p $GIT_BARE_CENTRAL/$REPO_NAME
+
 sudo chgrp -R group_$REPO_NAME $GIT_BARE_CENTRAL/$REPO_NAME
 
 sudo chmod g+w $GIT_BARE_CENTRAL/$REPO_NAME
