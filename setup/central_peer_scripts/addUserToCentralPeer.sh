@@ -43,7 +43,6 @@ USER_HOME=$HOME_LOCATION/$USER_NAME
 echo "Home directory will be: $USER_HOME"
 
 echo "Adding user to central peer"
-##TODO specify bash and home location. Copy ssh public key to that directoryy
 
 sudo useradd -s /bin/bash -m -d $USER_HOME -c "User Peer 1" -g users $USER_NAME
 
