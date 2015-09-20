@@ -21,5 +21,5 @@ mkdir -p $BareFileCo/$REPO_NAME
 
 sudo chgrp -R group_$REPO_NAME $BareFileCo/$REPO_NAME
 
-sudo chmod g+w $BareFileCo/$REPO_NAME
+sudo chmod 770 $BareFileCo/$REPO_NAME
 
