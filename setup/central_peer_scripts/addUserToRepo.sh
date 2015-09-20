@@ -1,5 +1,5 @@
 #!/bin/bash
-GIT_BARE_CENTRAL="/home/koen/gitBareRepoEncrypted"
+BareFileCo="/home/koen/gitBareRepoEncrypted"
 
 echo "Warning, git repo must be in the top level directory of the main git central"
 echo "Name of the repo"
@@ -17,9 +17,9 @@ echo "$user"
   sudo usermod -G group_$REPO_NAME $user;
 done
 
-mkdir -p $GIT_BARE_CENTRAL/$REPO_NAME
+mkdir -p $BareFileCo/$REPO_NAME
 
-sudo chgrp -R group_$REPO_NAME $GIT_BARE_CENTRAL/$REPO_NAME
+sudo chgrp -R group_$REPO_NAME $BareFileCo/$REPO_NAME
 
-sudo chmod g+w $GIT_BARE_CENTRAL/$REPO_NAME
+sudo chmod g+w $BareFileCo/$REPO_NAME
 
