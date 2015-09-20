@@ -7,8 +7,7 @@ USER=`whoami`
 
 echo "This script will run a remote script on the central peer server"
 echo "Follow the steps when they are asked"
-ssh $USER@$IP -o IdentityFile=/home/$USER/.ssh/id_rsa -p 22
-sudo /home/koen/mCloud/setup/central_peer_scripts/addUserToRepo.sh 
+ssh $USER@$IP -o IdentityFile=/home/$USER/.ssh/id_rsa -p 22 'sudo /home/koen/mCloud/setup/central_peer_scripts/addUserToRepo.sh'
 
 
 
