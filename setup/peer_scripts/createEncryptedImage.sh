@@ -16,7 +16,7 @@ cd $INSTALL_LOCATION
 
 #create image of 100MB
 echo "Creating image..."
-dd if=/dev/zero of=$PE_NAME.img bs=1 count=0 seek=`$IMAGE_SIZE`
+dd if=/dev/zero of=$PE_NAME.img bs=1 count=0 seek=$IMAGE_SIZE
 
 
 #generate random key file
