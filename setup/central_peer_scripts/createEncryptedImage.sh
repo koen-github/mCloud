@@ -15,7 +15,7 @@ cd $INSTALL_LOCATION
 
 #create image of 100MB
 echo "Creating image..."
-dd if=/dev/zero of=$CE_NAME.img bs=1 count=0 seek=`$IMAGE_SIZE`
+dd if=/dev/zero of=$CE_NAME.img bs=1 count=0 seek=$IMAGE_SIZE
 
 
 #generate random key file
@@ -45,7 +45,7 @@ mkdir $INSTALL_LOCATION/$CE_NAME
 echo "Mounting encrypted mapper..."
 sudo mount /dev/mapper/$CE_NAME $INSTALL_LOCATION/$CE_NAME
 
-if [ $OPEN_SSH -eq "y" ]
+if [ $OPEN_SSH == "y" ]
 then
 echo "Installing OpenSSH..."
 
@@ -53,14 +53,19 @@ sudo apt-get install openssh-server openssh-client
 
 sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
 echo "Opening SSH config file"
-nano /etc/ssh/sshd_config
+sudo nano /etc/ssh/sshd_config
 fi
 
 echo "Install completed, please use other shell scripts to start using mCloud"
 echo "Connect the peers using this command: (only local IP) "
-echo "sudo sshfs -o allow_other USERPEER@".$LOCAL_IP.":".$INSTALL_LOCATION."/".$CE_NAME." USER_LOCATION"
+echo "sudo sshfs -o allow_other USERPEER@$LOCAL_IP:$INSTALL_LOCATION/$CE_NAME USER_LOCATION"
 
 echo "------------------------------------"
 echo "Please enable in ssh config only ssh-key pair login, so it's not needed to created users"
 echo "SSH-config settings must look like this: "
-echo "PermitRootLogin 	no\nPasswordAuthentication 	no\nUsePAM			no"
+echo "
+PermitRootLogin 	no
+PasswordAuthentication 	no
+UsePAM			no
+
+"

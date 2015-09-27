@@ -1,0 +1,8 @@
+Correct installation STEPS:
+Run these script in the correct order:
+
+1) createEncryptedImage.sh
+2) addUserToCentralPeer.sh --> CHANGE config_server
+3) add_Script_to_sudoers.sh
+
+
