@@ -44,7 +44,7 @@ echo "Home directory will be: $USER_HOME"
 
 echo "Adding user to central peer"
 
-sudo useradd -s /bin/bash -m -d $USER_HOME -c "User Peer 1" -g users $USER_NAME
+sudo useradd -s /bin/bash -m -d $USER_HOME -c "PEER USER" -g users $USER_NAME
 
 sudo mkdir -p $USER_HOME/.ssh
 sudo sh -c "echo \" \" >> $USER_HOME/.ssh/authorized_keys"
