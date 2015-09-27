@@ -1,4 +1,5 @@
 ORDER OF RUNNING SCRIPTS:
 
 1) createEncryptedImage.sh
-
+2) generate_key.sh
+3) send key to central server

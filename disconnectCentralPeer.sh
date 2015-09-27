@@ -1,3 +1,5 @@
 #!/bin/bash
-LOCATION_MOUNTPOINT="/home/koen/fileCo1/remoteGit"
+FILE_CONTENTS=`cat LOCAL_CONFIG`
+eval $FILE_CONTENTS
+
 sudo umount $LOCATION_MOUNTPOINT

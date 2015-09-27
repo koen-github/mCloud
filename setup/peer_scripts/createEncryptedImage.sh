@@ -46,6 +46,8 @@ mkdir $INSTALL_LOCATION/$PE_NAME
 echo "Mounting encrypted mapper..."
 sudo mount /dev/mapper/$PE_NAME $INSTALL_LOCATION/$PE_NAME
 
+sudo mkdir $INSTALL_LOCATION/$PE_NAME/CENTRAL_SERVER
+
 
 echo "Install completed, please use other shell scripts to start using mCloud"
 
