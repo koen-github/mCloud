@@ -1,13 +1,19 @@
 #!/bin/bash
 ##Change paths and names to your own needs
 ##use this when you are logged in, in the account you want connect to the central peer
-IP="192.168.178.10"
-USER=`whoami`
+LOCAL_CONFIG=`cat ~/LOCAL_CONFIG`
+eval $LOCAL_CONFIG
 
 
 echo "This script will run a remote script on the central peer server"
-echo "Follow the steps when they are asked"
-ssh $USER@$IP -o IdentityFile=/home/$USER/.ssh/id_rsa -p 22 'sudo /home/koen/mCloud/setup/central_peer_scripts/addUserToRepo.sh'
+echo "Name of the repo"
+read REPO_NAME
+
+echo "Users, seperated by ; without spaces"
+read USERS
+
+
+ssh $USER@$IP -o IdentityFile=$USER_RSA_FILE -p 22 "../../addUserToRepo.sh $REPO_NAME $USERS"
 
 
 
