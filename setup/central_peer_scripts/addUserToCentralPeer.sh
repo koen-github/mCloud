@@ -1,4 +1,11 @@
 #!/bin/bash
+echo "Have you changed the config_server file? (y/n)"
+read CHANGED
+if [[ "$CHANGED" == "n" ]]
+then
+exit 1
+fi
+
 echo "Add user to central peer using SSH-KEY PAIR"
 echo "Please make sure you changed the ssh config file to only allow ssh-key pair login"
 

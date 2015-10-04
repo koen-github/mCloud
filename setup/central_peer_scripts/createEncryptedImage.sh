@@ -67,7 +67,7 @@ echo "Connect the peers using this command: (only local IP) "
 echo "sudo sshfs -o allow_other USERPEER@$LOCAL_IP:$INSTALL_LOCATION/$CE_NAME USER_LOCATION"
 
 echo "------------------------------------"
-echo "Please enable in ssh config only ssh-key pair login, so it's not needed to created users"
+echo "Please enable in ssh config only ssh-key pair login, so it is not required for users to setup a password"
 echo "SSH-config settings must look like this: "
 echo "
 PermitRootLogin 	no
