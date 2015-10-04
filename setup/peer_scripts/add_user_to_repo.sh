@@ -13,7 +13,7 @@ echo "Users, seperated by ; without spaces"
 read USERS
 
 
-ssh $USER@$IP -o IdentityFile=$USER_RSA_FILE -p 22 "../../addUserToRepo.sh $REPO_NAME $USERS"
+ssh $USER@$IP -o IdentityFile=$USER_RSA_FILE -p 22 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no "sudo ../../addUserToRepo.sh $REPO_NAME $USERS" 
 
 
 
