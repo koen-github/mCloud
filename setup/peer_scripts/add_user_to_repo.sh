@@ -15,6 +15,6 @@ read USERS
 
 ssh $USER@$CENTRAL_IP -o IdentityFile=$USER_RSA_FILE -p 22 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no "sudo ../../addUserToRepo.sh $REPO_NAME $USERS" 
 
-
+echo "NOW PLEASE RECONNECT TO THE CENTRAL SERVER USING SSHFS"
 
 
