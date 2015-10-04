@@ -45,6 +45,12 @@ mkdir $INSTALL_LOCATION/$CE_NAME
 echo "Mounting encrypted mapper..."
 sudo mount /dev/mapper/$CE_NAME $INSTALL_LOCATION/$CE_NAME
 
+sudo chown -R root:users $INSTALL_LOCATION/$CE_NAME 
+sudo chmod 775 $INSTALL_LOCATION/$CE_NAME #only chmod first directory
+
+sudo mkdir $INSTALL_LOCATION/$CE_NAME/home_directories
+
+
 if [ $OPEN_SSH == "y" ]
 then
 echo "Installing OpenSSH..."
@@ -66,6 +72,6 @@ echo "SSH-config settings must look like this: "
 echo "
 PermitRootLogin 	no
 PasswordAuthentication 	no
-UsePAM			no
+UsePAM			yes
 
 "
