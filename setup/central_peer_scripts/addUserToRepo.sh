@@ -1,7 +1,6 @@
 #!/bin/bash
 
-LOCAL_CONFIG=`cat ~/LOCAL_CONFIG`
-eval $LOCAL_CONFIG
+LOCATION_MOUNTPOINT="/home/koen/CENTRALSERVER/CENTRALCLOUD"
 echo "Use this script as ./addUserToRepo.sh REPO_NAME LIST_OF_USERS_SEPERATED_BY;"
 echo "Or open and follow steps"
 echo "Warning, this script must be run as root, or use the sudoers script"
