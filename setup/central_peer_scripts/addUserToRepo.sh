@@ -1,5 +1,7 @@
 #!/bin/bash
-BareFileCo="/home/koen/gitBareRepoEncrypted"
+
+LOCAL_CONFIG=`cat ~/LOCAL_CONFIG`
+eval $LOCAL_CONFIG
 echo "Use this script as ./addUserToRepo.sh REPO_NAME LIST_OF_USERS_SEPERATED_BY;"
 echo "Or open and follow steps"
 echo "Warning, this script must be run as root, or use the sudoers script"
@@ -33,9 +35,9 @@ echo "$user"
   usermod -G group_$REPO_NAME $user;
 done
 
-mkdir -p $BareFileCo/$REPO_NAME
+mkdir -p $LOCATION_MOUNTPOINT/$REPO_NAME
 
-chgrp -R group_$REPO_NAME $BareFileCo/$REPO_NAME
+chgrp -R group_$REPO_NAME $LOCATION_MOUNTPOINT/$REPO_NAME
 
-chmod 770 $BareFileCo/$REPO_NAME
+chmod 770 $LOCATION_MOUNTPOINT/$REPO_NAME
 
