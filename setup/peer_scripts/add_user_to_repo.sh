@@ -17,4 +17,7 @@ ssh $USER@$CENTRAL_IP -o IdentityFile=$USER_RSA_FILE -p 22 -o UserKnownHostsFile
 
 echo "NOW PLEASE RECONNECT TO THE CENTRAL SERVER USING SSHFS"
 
+../../disconnectCentralPeer.sh
+
+../../connectToCentralPeer.sh
 
