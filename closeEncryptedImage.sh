@@ -1,5 +1,5 @@
 #/bin/bash
-FILE_CONTENTS=`cat LOCAL_CONFIG`
+FILE_CONTENTS=`cat ~/LOCAL_CONFIG`
 eval $FILE_CONTENTS
 echo "Umounting mountpoint: $LOCATION_MOUNTPOINT"
 sudo umount $LOCATION_MOUNTPOINT
