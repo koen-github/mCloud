@@ -9,7 +9,8 @@ echo "Central Peer image name? "
 read CE_NAME
 echo "Would you also like to install openSSH? (y/n)"
 read OPEN_SSH
-
+echo "Would you like to set this server up as VPN server? (y/n)"
+read OPEN_VPN
 
 cd $INSTALL_LOCATION
 
@@ -60,6 +61,13 @@ sudo apt-get install openssh-server openssh-client
 sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
 echo "Opening SSH config file"
 sudo nano /etc/ssh/sshd_config
+fi
+
+if [ $OPEN_VPN == "y" ]
+then
+echo "Installing OpenVPN..."
+sudo ./openvpn-install.sh
+echo "If you want to add clients later, run this command in this directory: sudo ./openvpn-install.sh And then select add Client."
 fi
 
 echo "Install completed, please use other shell scripts to start using mCloud"
