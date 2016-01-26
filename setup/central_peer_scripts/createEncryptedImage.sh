@@ -11,6 +11,8 @@ echo "Would you also like to install openSSH? (y/n)"
 read OPEN_SSH
 echo "Would you like to set this server up as VPN server? (y/n)"
 read OPEN_VPN
+echo "Would you like to set this server up as NFS server? (y/n)"
+read NFS_SERVER
 
 cd $INSTALL_LOCATION
 
@@ -69,6 +71,22 @@ echo "Installing OpenVPN..."
 sudo ./openvpn-install.sh
 echo "If you want to add clients later, run this command in this directory: sudo ./openvpn-install.sh And then select add Client."
 fi
+
+if [ $NFS_SERVER == "y" ]
+then
+echo "Installing NFS components..."
+sudo apt-get install nfs-kernel-server nfs-common
+cat /proc/filesystems | grep nfs
+echo "This command must output something like: 
+nodev	nfs
+nodev	nfs4
+nodev	nfsd
+"
+echo "If there is no output, run this command: modprobe nfs"
+fi
+
+
+
 
 echo "Install completed, please use other shell scripts to start using mCloud"
 echo "Connect the peers using this command: (only local IP) "

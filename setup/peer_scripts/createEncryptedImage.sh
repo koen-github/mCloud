@@ -9,8 +9,8 @@ echo "Size of Central image? e.g. 100M"
 read IMAGE_SIZE
 echo "Peer image name? "
 read PE_NAME
-
-
+echo "Would you like to install NFS client components? (y/n)"
+read NFS_COMP
 
 cd $INSTALL_LOCATION
 
@@ -47,6 +47,14 @@ echo "Mounting encrypted mapper..."
 sudo mount /dev/mapper/$PE_NAME $INSTALL_LOCATION/$PE_NAME
 
 sudo mkdir $INSTALL_LOCATION/$PE_NAME/CENTRAL_SERVER
+
+if [ $NFS_COMP == "y" ]
+then
+echo "Installing NFS components..."
+sudo apt-get install nfs-common portmap
+echo "Done installing NFS client"
+fi
+
 
 
 echo "Install completed, please use other shell scripts to start using mCloud"

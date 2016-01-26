@@ -63,6 +63,11 @@ echo "Applying rights"
 sudo chown -R $USER_NAME $USER_HOME
 sudo chmod 700 -R $USER_HOME
 
+echo "Adding user to NFS share"
+sudo sh -c "echo \"  $USER_HOME  localhost(insecure,rw,sync,no_subtree_check) \" >> /etc/exports "
+echo "Exporting /etc/exports file"
+
+sudo exportfs -a
 
 
 echo "SSH server restarting"
