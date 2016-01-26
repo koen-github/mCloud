@@ -67,6 +67,7 @@ echo "Adding user to NFS share"
 sudo sh -c "echo \"  $USER_HOME  localhost(insecure,rw,sync,no_subtree_check) \" >> /etc/exports "
 echo "Exporting /etc/exports file"
 
+sudo /etc/init.d/nfs-kernel-server start
 sudo exportfs -a
 
 

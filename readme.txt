@@ -12,6 +12,10 @@ please run:
 
 sudo apt-get install sshfs
 
+AND:
+
+sudo apt-get install lvm2 cryptsetup
+sudo modprobe dm-mod
 
 =====
 If the central sever has support for VPN connection, please run as client the OPENVPN connection script.
