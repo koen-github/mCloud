@@ -11,3 +11,7 @@ sudo: sshfs: command not found
 please run:
 
 sudo apt-get install sshfs
+
+
+=====
+If the central sever has support for VPN connection, please run as client the OPENVPN connection script.
