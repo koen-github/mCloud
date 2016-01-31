@@ -60,8 +60,8 @@ echo "Copying pub key file to location..."
 sudo sh -c "echo $CONTENTS_OF_KEY >> $USER_HOME/.ssh/authorized_keys"
 
 echo "Applying rights"
-sudo chown -R $USER_NAME $USER_HOME
-sudo chmod 700 -R $USER_HOME
+sudo setfacl –m u:$USER_NAME:rwx $USER_HOME
+sudo setfacl -m other:--- $USER_HOME
 
 echo "Adding user to NFS share"
 sudo sh -c "echo \"  $USER_HOME  localhost(insecure,rw,sync,no_subtree_check) \" >> /etc/exports "

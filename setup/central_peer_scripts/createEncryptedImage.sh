@@ -13,6 +13,8 @@ echo "Would you like to set this server up as VPN server? (y/n)"
 read OPEN_VPN
 echo "Would you like to set this server up as NFS server? (y/n)"
 read NFS_SERVER
+echo "Would you like to setup this server with the ACL permissions system? (y/n) n=assuming you already setupped the harddrive as ACL"
+read ACL_SERVER
 
 cd $INSTALL_LOCATION
 
@@ -48,12 +50,6 @@ mkdir $INSTALL_LOCATION/$CE_NAME
 echo "Mounting encrypted mapper..."
 sudo mount /dev/mapper/$CE_NAME $INSTALL_LOCATION/$CE_NAME
 
-sudo chown -R root:users $INSTALL_LOCATION/$CE_NAME 
-sudo chmod 775 $INSTALL_LOCATION/$CE_NAME #only chmod first directory
-
-sudo mkdir $INSTALL_LOCATION/$CE_NAME/home_directories
-
-
 if [ $OPEN_SSH == "y" ]
 then
 echo "Installing OpenSSH..."
@@ -84,6 +80,26 @@ nodev	nfsd
 "
 echo "If there is no output, run this command: modprobe nfs"
 fi
+
+if [ $ACL_SERVER == "y" ]
+then
+sudo apt-get install acl
+echo "Please follow the rest of these steps online, I can't write a script that will handle all the special cases: https://help.ubuntu.com/community/FilePermissionsACLs#Enabling_ACLs_in_the_Filesystem
+"
+echo "Please run the following commands after finishing these steps: "
+echo "sudo setfacl -m g:users:rwx $INSTALL_LOCATION/$CE_NAME"
+echo "sudo mkdir $INSTALL_LOCATION/$CE_NAME/home_directories"
+fi
+
+if [ $ACL_SERVER == "n" ]
+then 
+echo "Assuming you already have a good working ACL system, I am running the follow commands. "
+sudo setfacl -m g:users:rwx $INSTALL_LOCATION/$CE_NAME
+sudo setfacl -m other:--- $INSTALL_LOCATION/$CE_NAME
+sudo mkdir $INSTALL_LOCATION/$CE_NAME/home_directories
+fi
+
+
 
 
 
