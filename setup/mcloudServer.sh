@@ -93,11 +93,13 @@ removeMCLOUD() {
 # OPENING MCLOUD IMAGE  #
 #########################
 openEncryptedContainer() {
-	"Opening and mounting the already created mCloud instance.."
+	echo "Opening and mounting the already created mCloud instance.."
 	if [ ! -f $CONFIG_FILE_NAME ]; then
 	    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
 	    exit 1;
 	fi
+
+	echo "Opening and mounting the already created mCloud instance.."
 
 	eval $CONFIG_FILE_NAME
 	echo "Opening the image file: $IMAGE_FILE..."
@@ -230,7 +232,7 @@ installMCLOUD() {
 	echo $CLOSE_CONTAINER >> ~/.bashrc
 	echo $ADD_USER >> ~/.bashrc
 	echo $REMOVE_USER >> ~/.bashrc
-	echo $MCLOUD_ITSELF ~/.bashrc
+	echo $MCLOUD_ITSELF >> ~/.bashrc
 	
 	echo "Reloading BASHRC Contents..."
 	. ~/.bashrc
