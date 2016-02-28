@@ -28,7 +28,7 @@ disconnectClientServer() {
 	    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
 	    exit 1;
 	fi
-	eval $CONFIG_CONTENT
+	eval $CONFIG_CONTENTS
 	echo "Disconnecting OpenVPN connection"
 	sudo killall openvpn
 	
@@ -41,9 +41,9 @@ connectClientServer() {
 	    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
 	    exit 1;
 	fi
-	eval $CONFIG_CONTENT
+	eval $CONFIG_CONTENTS
 	echo "Opening client config file... "
-	openvpn --config $OPENVPN_CONFIG
+	/usr/sbin/openvpn --config $OPENVPN_CONFIG
 
 	echo "OPENVPN is connected"
 
@@ -62,7 +62,7 @@ assignServer() {
 	    exit 1;
 	fi
 
-	eval $CONFIG_CONTENT
+	eval $CONFIG_CONTENTS
 
 	if [ -z "$USER_RSA_FILE" ]; then 
 		echo "What is the IP-address of the mCloud server you want to connect to? (e.g. 94.123.43.8)"
@@ -104,7 +104,7 @@ openEncryptedContainer() {
 	
 	echo "Opening and mounting the already created mCloud instance.."
 
-	eval $CONFIG_CONTENT
+	eval $CONFIG_CONTENTS
 	echo "Opening the image file: $IMAGE_FILE..."
 	sudo cryptsetup luksOpen $IMAGE_FILE $LOCAL_FILE_CONTAINER --key-file $KEY_FILE
 	echo "Mounting encrypted container..."
@@ -125,7 +125,7 @@ closeEncryptedContainer() {
 
 	echo "Closing the already mounted mCloud image."
 
-	eval $CONFIG_CONTENT
+	eval $CONFIG_CONTENTS
 	echo "Umounting mountpoint: $LOCATION_MOUNTPOINT"
 	sudo umount $LOCATION_MOUNTPOINT
 	echo "Closing encrypted luksvolume"
