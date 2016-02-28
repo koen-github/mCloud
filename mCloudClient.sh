@@ -43,7 +43,7 @@ connectClientServer() {
 	fi
 	eval $CONFIG_CONTENTS
 	echo "Opening client config file... "
-	/usr/sbin/openvpn --config $OPENVPN_CONFIG
+	sudo /usr/sbin/openvpn --config $OPENVPN_CONFIG
 
 	echo "OPENVPN is connected"
 
@@ -65,9 +65,6 @@ assignServer() {
 	eval $CONFIG_CONTENTS
 
 	if [ -z "$USER_RSA_FILE" ]; then 
-		echo "What is the IP-address of the mCloud server you want to connect to? (e.g. 94.123.43.8)"
-		read IP_ADDRESS
-
 		echo "Generating ssh key"
 		ssh-keygen -t rsa
 
@@ -76,10 +73,10 @@ assignServer() {
 		echo "YOUR SSH KEY: "
 		cat ~/.ssh/id_rsa.pub
 		echo "You will receive an ovpn file from the mCloud server, place that one in your home directory. Rename it to: mcloudServer.ovpn"
-		echo "OPENVPN_CONFIG=\"~/mcloudServer.ovpn\"" >> $CONFIG_FILE_NAME
+		echo "OPENVPN_CONFIG=\"$HOME/mcloudServer.ovpn\"" >> $CONFIG_FILE_NAME
 		echo "USER=\"$USER\"" >> $CONFIG_FILE_NAME
 		echo "USER_RSA_FILE=\"/home/$USER/.ssh/id_rsa\"" >> $CONFIG_FILE_NAME
-		echo "CENTRAL_IP=\"$IP_ADDRESS\"" >> $CONFIG_FILE_NAME
+		echo "CENTRAL_IP=\"10.8.0.1\"" >> $CONFIG_FILE_NAME
 	else
 		echo "You already generated an rsa file, please contact mCloud server for the IP-address and the OpenVPN config file"
 		exit 1
