@@ -15,7 +15,9 @@ MCLOUD_ITSELF="alias mcloud='$LOCATION_OF_SCRIPT'"
 
 
 USER=`whoami`
-CONFIG_FILE_NAME="~/MCLOUD_CONFIG_CLIENT"
+CONFIG_FILE_NAME="$HOME/MCLOUD_CONFIG_CLIENT"
+
+CONFIG_CONTENTS=`cat $CONFIG_FILE_NAME`
 
 assignUser() {
 	echo "Todo: assigning user to github repo on central server"
@@ -26,7 +28,7 @@ disconnectClientServer() {
 	    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
 	    exit 1;
 	fi
-	eval $CONFIG_FILE_NAME
+	eval $CONFIG_CONTENT
 	echo "Disconnecting OpenVPN connection"
 	sudo killall openvpn
 	
@@ -39,7 +41,7 @@ connectClientServer() {
 	    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
 	    exit 1;
 	fi
-	eval $CONFIG_FILE_NAME
+	eval $CONFIG_CONTENT
 	echo "Opening client config file... "
 	openvpn --config $OPENVPN_CONFIG
 
@@ -60,7 +62,7 @@ assignServer() {
 	    exit 1;
 	fi
 
-	eval $CONFIG_FILE_NAME
+	eval $CONFIG_CONTENT
 
 	if [ -z "$USER_RSA_FILE" ]; then 
 		echo "What is the IP-address of the mCloud server you want to connect to? (e.g. 94.123.43.8)"
@@ -99,10 +101,10 @@ openEncryptedContainer() {
 	    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
 	    exit 1;
 	fi
-
+	
 	echo "Opening and mounting the already created mCloud instance.."
 
-	eval $CONFIG_FILE_NAME
+	eval $CONFIG_CONTENT
 	echo "Opening the image file: $IMAGE_FILE..."
 	sudo cryptsetup luksOpen $IMAGE_FILE $LOCAL_FILE_CONTAINER --key-file $KEY_FILE
 	echo "Mounting encrypted container..."
@@ -123,7 +125,7 @@ closeEncryptedContainer() {
 
 	echo "Closing the already mounted mCloud image."
 
-	eval $CONFIG_FILE_NAME
+	eval $CONFIG_CONTENT
 	echo "Umounting mountpoint: $LOCATION_MOUNTPOINT"
 	sudo umount $LOCATION_MOUNTPOINT
 	echo "Closing encrypted luksvolume"
@@ -184,14 +186,14 @@ installMCLOUD() {
 
 	sudo mkdir $INSTALL_LOCATION/$PE_NAME/CENTRAL_SERVER
 
-	echo "
-	LOCATION_MOUNTPOINT=\"$INSTALL_LOCATION/$PE_NAME\"
-	LOCATION_SSHFS_MOUNTPOINT=\"$INSTALL_LOCATION/$PE_NAME/CENTRAL_SERVER\"
-	LOCAL_FILE_CONTAINER=\"$PE_NAME\"
-	IMAGE_FILE=\"$INSTALL_LOCATION/$PE_NAME.img\"
-	KEY_FILE=\"$INSTALL_LOCATION/$PE_NAME.keyfile\"
-	HOME_DIRECTORY=\"$INSTALL_LOCATION/$PE_NAME/home_directories\"
-	" > $CONFIG_FILE_NAME
+echo "
+LOCATION_MOUNTPOINT=\"$INSTALL_LOCATION/$PE_NAME\"
+LOCATION_SSHFS_MOUNTPOINT=\"$INSTALL_LOCATION/$PE_NAME/CENTRAL_SERVER\"
+LOCAL_FILE_CONTAINER=\"$PE_NAME\"
+IMAGE_FILE=\"$INSTALL_LOCATION/$PE_NAME.img\"
+KEY_FILE=\"$INSTALL_LOCATION/$PE_NAME.keyfile\"
+HOME_DIRECTORY=\"$INSTALL_LOCATION/$PE_NAME/home_directories\"
+" > $CONFIG_FILE_NAME
 
 	echo "Adding easy commands to BASHRC as aliases..."
 	echo $OPEN_CONTAINER >> ~/.bashrc
@@ -203,7 +205,7 @@ installMCLOUD() {
 	echo $ASSIGN_USER_TOREPO >>  ~/.bashrc
 	
 	echo "Reloading BASHRC Contents..."
-	. ~/.bashrc
+	exec bash
 
 
 	echo "Install completed, please connect this client to the central server."
@@ -284,7 +286,7 @@ case "$1" in
     openEncryptedContainer ##added
     ;;
   closeEncryptedContainer)
-    openEncryptedContainer  ##added
+    closeEncryptedContainer  ##added
     ;;
   *)
 	
