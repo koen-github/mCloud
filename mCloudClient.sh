@@ -34,6 +34,7 @@ disconnectClientServer() {
 	
 	echo "Unmounting SSH mountpoint and tunnel"
 	sudo umount $LOCATION_SSHFS_MOUNTPOINT
+	sudo killall ssh
 }
 
 connectClientServer() {
@@ -43,13 +44,14 @@ connectClientServer() {
 	fi
 	eval $CONFIG_CONTENTS
 	echo "Opening client config file... "
-	sudo /usr/sbin/openvpn --config $OPENVPN_CONFIG
+	exec 3< <(sudo /usr/sbin/openvpn --config $OPENVPN_CONFIG)
+	sed '/Initialization Sequence Completed$/q' <&3 ; cat <&3 &
 
 	echo "OPENVPN is connected"
 
 	echo "Calling mCloud server and creating tunnel"
 
-	ssh -fNv -L 3049:localhost:2049 $USER@$CENTRAL_IP -o IdentityFile=$USER_RSA_FILE ##THIS IS WRONG, TODO change central peer into openvpn
+	ssh -fNv -L 3049:localhost:2049 $USER@$CENTRAL_IP -o IdentityFile=$USER_RSA_FILE
 	sudo mount -t nfs -o port=3049 localhost:../../ $LOCATION_SSHFS_MOUNTPOINT 
 	echo "Finished connecting to mCLoud server"
 
@@ -79,6 +81,8 @@ assignServer() {
 		echo "CENTRAL_IP=\"10.8.0.1\"" >> $CONFIG_FILE_NAME
 	else
 		echo "You already generated an rsa file, please contact mCloud server for the IP-address and the OpenVPN config file"
+		echo "Contents of RSA key: "
+		cat ~/.ssh/id_rsa.pub
 		exit 1
 	fi
 	
