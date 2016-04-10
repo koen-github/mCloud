@@ -4,18 +4,9 @@
 ##CLIENT PEER SCRIPT
 LOCATION_OF_SCRIPT=`readlink -f "$0"`
 
-##aliases in bashrc
-OPEN_CONTAINER="alias mcloud-opencontainer='$LOCATION_OF_SCRIPT openEncryptedContainer'"
-CLOSE_CONTAINER="alias mcloud-closecontainer='$LOCATION_OF_SCRIPT closeEncryptedContainer'"
-CONNECT_TO_CENTRAL="alias mcloud-connectclient='$LOCATION_OF_SCRIPT connectClientServer'"
-DISCON_TO_CENTRAL="alias mcloud-disconclient='$LOCATION_OF_SCRIPT disconnectClientServer'"
-ASSIGN_CLIENT="alias mcloud-assignserver='$LOCATION_OF_SCRIPT assignServer'"
-ASSIGN_USER_TOREPO="alias mcloud-assignuser='$LOCATION_OF_SCRIPT assignUser'"
-MCLOUD_ITSELF="alias mcloud='$LOCATION_OF_SCRIPT'"
-
 
 USER=`whoami`
-CONFIG_FILE_NAME="$HOME/MCLOUD_CONFIG_CLIENT"
+CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-client.conf"
 
 CONFIG_CONTENTS=`cat $CONFIG_FILE_NAME`
 
@@ -135,96 +126,15 @@ closeEncryptedContainer() {
 }
 
 #########################
-# INSTALL SCRIPT MCLOUD #
-#########################
-installMCLOUD() {
-	sudo apt-get install nfs-common portmap sshfs lvm2 cryptsetup openvpn
-	sudo modprobe dm-mod
-
-	echo "Note: you must be sudo user before running this script"
-	echo "Use this shell script to create an encrypted container for the Peer, please look into the code before you run this"
-
-	echo "Give full path to install location"
-	read INSTALL_LOCATION
-	echo "Size of Central image? e.g. 100M"
-	read IMAGE_SIZE
-	echo "Peer image name? "
-	read PE_NAME
-
-	cd $INSTALL_LOCATION
-
-	#create image of 100MB
-	echo "Creating image..."
-	dd if=/dev/zero of=$PE_NAME.img bs=1 count=0 seek=$IMAGE_SIZE
-
-
-	#generate random key file
-	echo "Generating random file..."
-	dd if=/dev/urandom of=$PE_NAME.keyfile bs=1024 count=1
-
-
-	#format encrypted
-	echo "Format encrypted image..."
-	sudo cryptsetup luksFormat $PE_NAME.img $PE_NAME.keyfile
-
-
-
-	#create mkfs4 partition
-	echo "Opening image..."
-	sudo cryptsetup luksOpen $PE_NAME.img $PE_NAME --key-file $PE_NAME.keyfile
-
-
-	echo "Creating mkfs4 partition..."
-	sudo mkfs.ext4 /dev/mapper/$PE_NAME
-
-	#mount to directory
-
-	echo "Creating install directory..."
-	mkdir $INSTALL_LOCATION/$PE_NAME
-
-	echo "Mounting encrypted mapper..."
-	sudo mount /dev/mapper/$PE_NAME $INSTALL_LOCATION/$PE_NAME
-
-	sudo mkdir $INSTALL_LOCATION/$PE_NAME/CENTRAL_SERVER
-
-echo "
-LOCATION_MOUNTPOINT=\"$INSTALL_LOCATION/$PE_NAME\"
-LOCATION_SSHFS_MOUNTPOINT=\"$INSTALL_LOCATION/$PE_NAME/CENTRAL_SERVER\"
-LOCAL_FILE_CONTAINER=\"$PE_NAME\"
-IMAGE_FILE=\"$INSTALL_LOCATION/$PE_NAME.img\"
-KEY_FILE=\"$INSTALL_LOCATION/$PE_NAME.keyfile\"
-HOME_DIRECTORY=\"$INSTALL_LOCATION/$PE_NAME/home_directories\"
-" > $CONFIG_FILE_NAME
-
-	echo "Adding easy commands to BASHRC as aliases..."
-	echo $OPEN_CONTAINER >> ~/.bashrc
-	echo $CLOSE_CONTAINER >> ~/.bashrc
-	echo $CONNECT_TO_CENTRAL >> ~/.bashrc
-	echo $ASSIGN_CLIENT >> ~/.bashrc
-	echo $DISCON_TO_CENTRAL >> ~/.bashrc
-	echo $MCLOUD_ITSELF >> ~/.bashrc
-	echo $ASSIGN_USER_TOREPO >>  ~/.bashrc
-	
-	echo "Reloading BASHRC Contents..."
-	exec bash
-
-
-	echo "Install completed, please connect this client to the central server."
-	echo "Now run this script anytime you like to connect to a central mCLoud server using: mcloud-assignserver"
-
-
-}
-
-#########################
 # The command line help #
 #########################
 display_help() {
     echo "Warning: RUN THIS SCRIPT ONLY ON A PEER FOR MCLOUD"
     echo "This will run a few scripts for mCloud and this script will also ask some information before installing every component"
     echo ""
-    echo "Usage: $0 [option...] { installMCLOUD | removeMCLOUD | connectClientServer | disconnectClientServer | assignServer | openEncryptedContainer | closeEncryptedContainer | assignUser }" >&2
+    echo "Usage: $0 [option...] { connectClientServer | disconnectClientServer | assignServer | openEncryptedContainer | closeEncryptedContainer | assignUser }" >&2
     echo ""
-    echo "   -c, --configuration           Path to configuration file"
+    echo "   -c, --configuration           Path to configuration file, default file is: /etc/mcloud-config/mcloud-client.conf"
     echo "   -h, --help                    Display this help message"
     echo ""
     exit 1
@@ -265,12 +175,6 @@ done
 # is set too execute #
 ######################
 case "$1" in
-  removeMCLOUD)
-    removeMCLOUD	
-    ;;
-  installMCLOUD)
-    installMCLOUD ##added
-    ;;
   assignServer)
     assignServer
     ;;

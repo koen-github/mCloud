@@ -1,0 +1,196 @@
+#!/bin/sh
+ 
+# Source debconf library.
+. /usr/share/debconf/confmodule
+ 
+
+# Fetching configuration from debconf
+db_get mcloud/mcloudType
+ANSWER1=$RET
+
+
+if [ $ANSWER1 == "server" ]
+then
+	rm /usr/bin/mcloud-client
+	mv /usr/bin/mcloud-server /usr/bin/mcloud
+	mkdir -p /etc/mcloud-config/
+
+	CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-server.conf"
+
+	db_get mcloud/server-install_path
+	INSTALL_LOCATION=$RET
+
+	db_get mcloud/server-image_size
+	IMAGE_SIZE=$RET
+
+	db_get mcloud/server-image_name
+	CE_NAME=$RET
+
+	db_get mcloud/server-openvpn
+	OPEN_VPN=$RET
+
+	db_get mcloud/server-acl_system
+	ACL_SERVER=$RET
+
+
+	sudo modprobe dm-mod
+
+	echo "Creating Mcloud config file..."
+	touch $CONFIG_FILE_NAME
+	sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
+
+	echo "Settings SSHD config parameters..."
+	sudo sh -c "echo \"PermitRootLogin 		no\" >> /etc/ssh/sshd_config"
+	sudo sh -c "echo \"PasswordAuthentication 	no\" >> /etc/ssh/sshd_config"
+	sudo sh -c "echo \"UsePAM			yes\" >> /etc/ssh/sshd_config" 
+
+	LOCAL_IP=`hostname -I | cut -f1 -d' '`
+
+	CURRENT_RUN=`pwd`
+
+	cd $INSTALL_LOCATION
+
+	#create image of 100MB
+	echo "Creating image..."
+	dd if=/dev/zero of=$CE_NAME.img bs=1 count=0 seek=$IMAGE_SIZE
+
+
+	#generate random key file
+	echo "Generating random file..."
+	dd if=/dev/urandom of=$CE_NAME.keyfile bs=1024 count=1
+
+
+	#format encrypted
+	echo "Format encrypted image..."
+	sudo cryptsetup luksFormat $CE_NAME.img $CE_NAME.keyfile
+
+	#create mkfs4 partition
+	echo "Opening image..."
+	sudo cryptsetup luksOpen $CE_NAME.img $CE_NAME --key-file $CE_NAME.keyfile
+
+
+	echo "Creating mkfs4 partition..."
+	sudo mkfs.ext4 /dev/mapper/$CE_NAME
+
+	#mount to directory
+
+	echo "Creating install directory..."
+	mkdir $INSTALL_LOCATION/$CE_NAME
+
+	echo "Mounting encrypted mapper..."
+	sudo mount /dev/mapper/$CE_NAME $INSTALL_LOCATION/$CE_NAME
+	
+
+
+	if [ $OPEN_VPN == "y" ]
+	then
+		echo "Installing OpenVPN..."
+		sudo openvpn-install
+		echo "If you want to add clients later, run this command in this directory: sudo openvpn-install. And then select add Client."
+	fi
+
+
+	if [ $ACL_SERVER == "y" ]
+	then
+		sudo apt-get install acl
+		echo "Please follow the rest of these steps online, I can't write a script that will handle all the special cases: https://help.ubuntu.com/community/FilePermissionsACLs#Enabling_ACLs_in_the_Filesystem
+		"
+		echo "Please run the following commands after finishing these steps: "
+		echo "sudo setfacl -m g:users:rwx $INSTALL_LOCATION/$CE_NAME"
+		echo "sudo setfacl -m other:--- $INSTALL_LOCATION/$CE_NAME"
+		echo "sudo mkdir $INSTALL_LOCATION/$CE_NAME/home_directories"
+	else
+	
+		echo "Appliying ACL rights."
+		sudo setfacl -m g:users:rwx $INSTALL_LOCATION/$CE_NAME
+		sudo setfacl -m other:--- $INSTALL_LOCATION/$CE_NAME
+		sudo mkdir $INSTALL_LOCATION/$CE_NAME/home_directories
+	fi
+
+	echo "Saving MCLOUD_CONFIG_SERVER file.."
+
+echo "
+LOCATION_MOUNTPOINT=\"$INSTALL_LOCATION/$CE_NAME\"
+LOCAL_FILE_CONTAINER=\"$CE_NAME\"
+IMAGE_FILE=\"$INSTALL_LOCATION/$CE_NAME.img\"
+KEY_FILE=\"$INSTALL_LOCATION/$CE_NAME.keyfile\"
+HOME_DIRECTORY=\"$INSTALL_LOCATION/$CE_NAME/home_directories\"
+" > $CONFIG_FILE_NAME
+
+	
+	echo "Installation of MCLOUD is finished"
+	echo "Use the following commands: mcloud"
+
+else 
+##############################
+##### MCLOUD CLIENT ##########
+##############################
+	sudo rm /usr/bin/mcloud-server
+	sudo rm /usr/bin/openvpn-install
+	sudo mv /usr/bin/mcloud-client /usr/bin/mcloud
+	sudo mkdir -p /etc/mcloud-config/
+
+	CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-client.conf"
+
+	db_get mcloud/client-install_path 
+	INSTALL_LOCATION=$RET
+
+	db_get mcloud/client-image_size
+	IMAGE_SIZE=$RET
+
+	db_get mcloud/client-peer_name
+	PE_NAME=$RET
+
+	sudo modprobe dm-mod
+
+	cd $INSTALL_LOCATION
+
+	#create image of 100MB
+	echo "Creating image..."
+	dd if=/dev/zero of=$PE_NAME.img bs=1 count=0 seek=$IMAGE_SIZE
+
+
+	#generate random key file
+	echo "Generating random file..."
+	dd if=/dev/urandom of=$PE_NAME.keyfile bs=1024 count=1
+
+
+	#format encrypted
+	echo "Format encrypted image..."
+	sudo cryptsetup luksFormat $PE_NAME.img $PE_NAME.keyfile
+
+
+
+	#create mkfs4 partition
+	echo "Opening image..."
+	sudo cryptsetup luksOpen $PE_NAME.img $PE_NAME --key-file $PE_NAME.keyfile
+
+
+	echo "Creating mkfs4 partition..."
+	sudo mkfs.ext4 /dev/mapper/$PE_NAME
+
+	#mount to directory
+
+	echo "Creating install directory..."
+	mkdir $INSTALL_LOCATION/$PE_NAME
+
+	echo "Mounting encrypted mapper..."
+	sudo mount /dev/mapper/$PE_NAME $INSTALL_LOCATION/$PE_NAME
+
+	sudo mkdir $INSTALL_LOCATION/$PE_NAME/CENTRAL_SERVER
+
+	echo "
+	LOCATION_MOUNTPOINT=\"$INSTALL_LOCATION/$PE_NAME\"
+	LOCATION_SSHFS_MOUNTPOINT=\"$INSTALL_LOCATION/$PE_NAME/CENTRAL_SERVER\"
+	LOCAL_FILE_CONTAINER=\"$PE_NAME\"
+	IMAGE_FILE=\"$INSTALL_LOCATION/$PE_NAME.img\"
+	KEY_FILE=\"$INSTALL_LOCATION/$PE_NAME.keyfile\"
+	HOME_DIRECTORY=\"$INSTALL_LOCATION/$PE_NAME/home_directories\"
+	" > $CONFIG_FILE_NAME
+
+	echo "Install completed, please connect this client to the central server."
+	echo "Now run this script anytime you like to connect to a central mCLoud server using: mcloud assignserver"
+
+
+
+fi

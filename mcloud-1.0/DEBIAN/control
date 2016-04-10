@@ -1,0 +1,9 @@
+Package: mcloud
+Version: 1.0
+Section: custom
+Priority: optional
+Architecture: all
+Depends: sshfs, lvm2, cryptsetup, openssh-server, openssh-client, nfs-kernel-server, nfs-common, portmap, openvpn
+Essential: no
+Maintainer: https://github.com/koen-github
+Description: Another cloud system with encryption support

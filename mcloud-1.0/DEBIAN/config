@@ -1,0 +1,31 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+# Ask questions
+db_input high mcloud/mcloudType || true
+ 
+# Show interface
+db_go || true
+
+# Fetching configuration from debconf
+db_get mcloud/mcloudType
+ANSWER1=$RET
+
+if [ "$ANSWER1" = "server" ]
+then
+db_input high mcloud/server-install_path || true
+db_input high mcloud/server-image_size || true
+db_input high mcloud/server-image_name || true
+db_input high mcloud/server-openvpn || true
+db_input high mcloud/server-acl_system || true
+db_go || true
+else 
+db_input high mcloud/client-install_path || true
+db_input high mcloud/client-image_size || true
+db_input high mcloud/client-peer_name || true
+db_go || true
+
+fi
+ 

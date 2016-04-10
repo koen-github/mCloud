@@ -1,0 +1,41 @@
+Template: mcloud/mcloudType
+Type: select
+Default: server
+Choices: server, client
+Description: What type of mCloud system are you installing? 
+
+Template: mcloud/client-install_path
+Type: string
+Description: Full installation path for mCloud? 
+
+Template: mcloud/client-image_size
+Type: string
+Description: Image size mCloud (e.g. 100M)? 
+
+Template: mcloud/client-peer_name
+Type: string
+Description: Peer name of image? 
+
+Template: mcloud/server-install_path
+Type: string
+Description: Full installation path for mCloud? 
+
+Template: mcloud/server-image_size
+Type: string
+Description: Image size mCloud (e.g. 100M)?  
+
+Template: mcloud/server-image_name
+Type: string
+Description: Central name of image?
+
+Template: mcloud/server-openvpn
+Type: select
+Choices: yes, no 
+Default: yes
+Description: Would you like to set this server up as VPN server?
+
+Template: mcloud/server-acl_system
+Type: select
+Choices: yes, no 
+Default: yes
+Description: Would you like to setup this server with the ACL permissions system?
