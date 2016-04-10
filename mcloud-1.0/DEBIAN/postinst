@@ -9,7 +9,7 @@ db_get mcloud/mcloudType
 ANSWER1=$RET
 
 
-if [ $ANSWER1 == "server" ]
+if [ "$ANSWER1" = "server" ]
 then
 	rm /usr/bin/mcloud-client
 	mv /usr/bin/mcloud-server /usr/bin/mcloud
@@ -82,7 +82,7 @@ then
 	
 
 
-	if [ $OPEN_VPN == "y" ]
+	if [ "$OPEN_VPN" = "y" ]
 	then
 		echo "Installing OpenVPN..."
 		sudo openvpn-install
@@ -90,7 +90,7 @@ then
 	fi
 
 
-	if [ $ACL_SERVER == "y" ]
+	if [ "$ACL_SERVER" = "y" ]
 	then
 		sudo apt-get install acl
 		echo "Please follow the rest of these steps online, I can't write a script that will handle all the special cases: https://help.ubuntu.com/community/FilePermissionsACLs#Enabling_ACLs_in_the_Filesystem
