@@ -22,7 +22,7 @@ disconnectClientServer() {
 	eval $CONFIG_CONTENTS
 	echo "Disconnecting OpenVPN connection"
 	sudo killall openvpn
-	
+
 	echo "Unmounting SSH mountpoint and tunnel"
 	sudo umount $LOCATION_SSHFS_MOUNTPOINT
 	sudo killall ssh
@@ -43,7 +43,7 @@ connectClientServer() {
 	echo "Calling mCloud server and creating tunnel"
 
 	ssh -fNv -L 3049:localhost:2049 $USER@$CENTRAL_IP -o IdentityFile=$USER_RSA_FILE
-	sudo mount -t nfs -o port=3049 localhost:../../ $LOCATION_SSHFS_MOUNTPOINT 
+	sudo mount -t nfs -o port=3049 localhost:../../ $LOCATION_SSHFS_MOUNTPOINT
 	echo "Finished connecting to mCLoud server"
 
 }
@@ -57,7 +57,7 @@ assignServer() {
 
 	eval $CONFIG_CONTENTS
 
-	if [ -z "$USER_RSA_FILE" ]; then 
+	if [ -z "$USER_RSA_FILE" ]; then
 		echo "Generating ssh key"
 		ssh-keygen -t rsa
 
@@ -66,17 +66,17 @@ assignServer() {
 		echo "YOUR SSH KEY: "
 		cat ~/.ssh/id_rsa.pub
 		echo "You will receive an ovpn file from the mCloud server, place that one in your home directory. Rename it to: mcloudServer.ovpn"
-		echo "OPENVPN_CONFIG=\"$HOME/mcloudServer.ovpn\"" >> $CONFIG_FILE_NAME
-		echo "USER=\"$USER\"" >> $CONFIG_FILE_NAME
-		echo "USER_RSA_FILE=\"/home/$USER/.ssh/id_rsa\"" >> $CONFIG_FILE_NAME
-		echo "CENTRAL_IP=\"10.8.0.1\"" >> $CONFIG_FILE_NAME
+		sudo sh -c "echo \"OPENVPN_CONFIG=\"$HOME/mcloudServer.ovpn\"\" >> $CONFIG_FILE_NAME"
+		sudo sh -c "echo \"USER=\"$USER\"\" >> $CONFIG_FILE_NAME"
+		sudo sh -c "echo \"USER_RSA_FILE=\"/home/$USER/.ssh/id_rsa\"\" >> $CONFIG_FILE_NAME"
+		sudo sh -c "echo \"CENTRAL_IP=\"10.8.0.1\"\" >> $CONFIG_FILE_NAME"
 	else
 		echo "You already generated an rsa file, please contact mCloud server for the IP-address and the OpenVPN config file"
 		echo "Contents of RSA key: "
 		cat ~/.ssh/id_rsa.pub
 		exit 1
 	fi
-	
+
 
 }
 
@@ -88,12 +88,12 @@ removeMCLOUD() {
 # OPENING MCLOUD IMAGE  #
 #########################
 openEncryptedContainer() {
-	
+
 	if [ ! -f $CONFIG_FILE_NAME ]; then
 	    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
 	    exit 1;
 	fi
-	
+
 	echo "Opening and mounting the already created mCloud instance.."
 
 	eval $CONFIG_CONTENTS
@@ -121,7 +121,7 @@ closeEncryptedContainer() {
 	echo "Umounting mountpoint: $LOCATION_MOUNTPOINT"
 	sudo umount $LOCATION_MOUNTPOINT
 	echo "Closing encrypted luksvolume"
-	sudo cryptsetup luksClose $LOCAL_FILE_CONTAINER 
+	sudo cryptsetup luksClose $LOCAL_FILE_CONTAINER
 	echo "Mountpoint is closed"
 }
 
@@ -162,7 +162,7 @@ do
       -*)
           echo "Error: Unknown option: $1" >&2
           ## or call function display_help
-          exit 1 
+          exit 1
           ;;
       *)  # No more options
           break
@@ -170,7 +170,7 @@ do
     esac
 done
 
-###################### 
+######################
 # Check if parameter #
 # is set too execute #
 ######################
@@ -182,7 +182,7 @@ case "$1" in
     assignUser
     ;;
   connectClientServer)
-    connectClientServer 
+    connectClientServer
     ;;
   disconnectClientServer)
     disconnectClientServer
@@ -194,7 +194,7 @@ case "$1" in
     closeEncryptedContainer  ##added
     ;;
   *)
-	
+
 
      display_help
      exit 1
