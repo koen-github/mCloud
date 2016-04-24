@@ -79,10 +79,6 @@ removeUser() {
 	echo "TODO: Removing user from central peer"
 }
 
-removeMCLOUD() {
-	echo "TODO: Removing MCLOUD package"
-}
-
 #########################
 # OPENING MCLOUD IMAGE  #
 #########################

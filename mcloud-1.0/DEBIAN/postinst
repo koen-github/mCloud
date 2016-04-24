@@ -12,6 +12,7 @@ ANSWER1=$RET
 if [ "$ANSWER1" = "server" ]
 then
 	rm /usr/bin/mcloud-client
+	rm /usr/bin/mcloud
 	mv /usr/bin/mcloud-server /usr/bin/mcloud
 	mkdir -p /etc/mcloud-config/
 
@@ -48,7 +49,12 @@ then
 
 	CURRENT_RUN=`pwd`
 
-	cd $INSTALL_LOCATION
+	if [ -d "$INSTALL_LOCATION" ]; then
+	  cd $INSTALL_LOCATION
+	else
+	  echo "ERROR: Install location is not a DIR" 
+	  exit -1;
+	fi	
 
 	#create image of 100MB
 	echo "Creating image..."
@@ -143,7 +149,13 @@ else
 
 	sudo modprobe dm-mod
 
-	cd $INSTALL_LOCATION
+
+	if [ -d "$INSTALL_LOCATION" ]; then
+	  cd $INSTALL_LOCATION
+	else
+	  echo "ERROR: Install location is not a DIR" 
+	  exit -1;
+	fi	
 
 	#create image of 100MB
 	echo "Creating image..."
