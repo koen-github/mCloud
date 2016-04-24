@@ -1,8 +1,8 @@
 #!/bin/sh
- 
+
 # Source debconf library.
 . /usr/share/debconf/confmodule
- 
+
 
 # Fetching configuration from debconf
 db_get mcloud/mcloudType
@@ -11,15 +11,20 @@ ANSWER1=$RET
 
 if [ "$ANSWER1" = "server" ]
 then
-	rm /usr/bin/mcloud-client
-	rm /usr/bin/mcloud
-	mv /usr/bin/mcloud-server /usr/bin/mcloud
-	mkdir -p /etc/mcloud-config/
+
 
 	CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-server.conf"
 
 	db_get mcloud/server-install_path
 	INSTALL_LOCATION=$RET
+
+  echo " INSTALL LOCATION: $INSTALL_LOCATION" ;
+  if [ -d "$INSTALL_LOCATION" ]; then
+    cd $INSTALL_LOCATION
+  else
+    echo "ERROR: Install location is not a DIR"
+    exit -1;
+  fi
 
 	db_get mcloud/server-image_size
 	IMAGE_SIZE=$RET
@@ -43,18 +48,20 @@ then
 	echo "Settings SSHD config parameters..."
 	sudo sh -c "echo \"PermitRootLogin 		no\" >> /etc/ssh/sshd_config"
 	sudo sh -c "echo \"PasswordAuthentication 	no\" >> /etc/ssh/sshd_config"
-	sudo sh -c "echo \"UsePAM			yes\" >> /etc/ssh/sshd_config" 
+	sudo sh -c "echo \"UsePAM			yes\" >> /etc/ssh/sshd_config"
+
+
 
 	LOCAL_IP=`hostname -I | cut -f1 -d' '`
 
 	CURRENT_RUN=`pwd`
 
-	if [ -d "$INSTALL_LOCATION" ]; then
-	  cd $INSTALL_LOCATION
-	else
-	  echo "ERROR: Install location is not a DIR" 
-	  exit -1;
-	fi	
+
+  rm /usr/bin/mcloud-client
+	rm /usr/bin/mcloud
+	mv /usr/bin/mcloud-server /usr/bin/mcloud
+	mkdir -p /etc/mcloud-config/
+
 
 	#create image of 100MB
 	echo "Creating image..."
@@ -85,7 +92,6 @@ then
 
 	echo "Mounting encrypted mapper..."
 	sudo mount /dev/mapper/$CE_NAME $INSTALL_LOCATION/$CE_NAME
-	
 
 
 	if [ "$OPEN_VPN" = "y" ]
@@ -106,7 +112,7 @@ then
 		echo "sudo setfacl -m other:--- $INSTALL_LOCATION/$CE_NAME"
 		echo "sudo mkdir $INSTALL_LOCATION/$CE_NAME/home_directories"
 	else
-	
+
 		echo "Appliying ACL rights."
 		sudo setfacl -m g:users:rwx $INSTALL_LOCATION/$CE_NAME
 		sudo setfacl -m other:--- $INSTALL_LOCATION/$CE_NAME
@@ -123,11 +129,11 @@ KEY_FILE=\"$INSTALL_LOCATION/$CE_NAME.keyfile\"
 HOME_DIRECTORY=\"$INSTALL_LOCATION/$CE_NAME/home_directories\"
 " > $CONFIG_FILE_NAME
 
-	
+
 	echo "Installation of MCLOUD is finished"
 	echo "Use the following commands: mcloud"
 
-else 
+else
 ##############################
 ##### MCLOUD CLIENT ##########
 ##############################
@@ -138,7 +144,7 @@ else
 
 	CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-client.conf"
 
-	db_get mcloud/client-install_path 
+	db_get mcloud/client-install_path
 	INSTALL_LOCATION=$RET
 
 	db_get mcloud/client-image_size
@@ -153,9 +159,9 @@ else
 	if [ -d "$INSTALL_LOCATION" ]; then
 	  cd $INSTALL_LOCATION
 	else
-	  echo "ERROR: Install location is not a DIR" 
+	  echo "ERROR: Install location is not a DIR"
 	  exit -1;
-	fi	
+	fi
 
 	#create image of 100MB
 	echo "Creating image..."
