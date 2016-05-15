@@ -3,7 +3,6 @@
 # Source debconf library.
 . /usr/share/debconf/confmodule
 
-
 # Fetching configuration from debconf
 db_get mcloud/mcloudType
 ANSWER1=$RET
@@ -32,24 +31,29 @@ then
 	db_get mcloud/server-image_name
 	CE_NAME=$RET
 
-	db_get mcloud/server-openvpn
-	OPEN_VPN=$RET
-
 	db_get mcloud/server-acl_system
 	ACL_SERVER=$RET
 
+	db_get mcloud/server-sudoers
+	SUDOERS_ADD=$RET
 
-	sudo modprobe dm-mod
+
+	modprobe dm-mod
 
 	echo "Creating Mcloud config file..."
+
+	mkdir -p /etc/mcloud-config/
+
 	touch $CONFIG_FILE_NAME
-	sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
+	cp /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
 
 	echo "Settings SSHD config parameters..."
-	sudo sh -c "echo \"PermitRootLogin 		no\" >> /etc/ssh/sshd_config"
-	sudo sh -c "echo \"PasswordAuthentication 	no\" >> /etc/ssh/sshd_config"
-	sudo sh -c "echo \"UsePAM			yes\" >> /etc/ssh/sshd_config"
+	sh -c "echo \"PermitRootLogin 		no\" >> /etc/ssh/sshd_config"
+	sh -c "echo \"PasswordAuthentication 	no\" >> /etc/ssh/sshd_config"
+	sh -c "echo \"UsePAM			yes\" >> /etc/ssh/sshd_config"
 
+	rm -f /usr/bin/mcloud-client
+	rm -f /usr/bin/mcloud
 
 
 	LOCAL_IP=`hostname -I | cut -f1 -d' '`
@@ -57,11 +61,7 @@ then
 	CURRENT_RUN=`pwd`
 
 
-  rm /usr/bin/mcloud-client
-	rm /usr/bin/mcloud
 	mv /usr/bin/mcloud-server /usr/bin/mcloud
-	mkdir -p /etc/mcloud-config/
-
 
 	#create image of 100MB
 	echo "Creating image..."
@@ -75,15 +75,15 @@ then
 
 	#format encrypted
 	echo "Format encrypted image..."
-	sudo cryptsetup luksFormat $CE_NAME.img $CE_NAME.keyfile
+	cryptsetup luksFormat $CE_NAME.img $CE_NAME.keyfile
 
 	#create mkfs4 partition
 	echo "Opening image..."
-	sudo cryptsetup luksOpen $CE_NAME.img $CE_NAME --key-file $CE_NAME.keyfile
+	cryptsetup luksOpen $CE_NAME.img $CE_NAME --key-file $CE_NAME.keyfile
 
 
 	echo "Creating mkfs4 partition..."
-	sudo mkfs.ext4 /dev/mapper/$CE_NAME
+	mkfs.ext4 /dev/mapper/$CE_NAME
 
 	#mount to directory
 
@@ -91,20 +91,10 @@ then
 	mkdir $INSTALL_LOCATION/$CE_NAME
 
 	echo "Mounting encrypted mapper..."
-	sudo mount /dev/mapper/$CE_NAME $INSTALL_LOCATION/$CE_NAME
+	mount /dev/mapper/$CE_NAME $INSTALL_LOCATION/$CE_NAME
 
-
-	if [ "$OPEN_VPN" = "y" ]
+	if [ "$ACL_SERVER" = "yes" ]
 	then
-		echo "Installing OpenVPN..."
-		sudo openvpn-install
-		echo "If you want to add clients later, run this command in this directory: sudo openvpn-install. And then select add Client."
-	fi
-
-
-	if [ "$ACL_SERVER" = "y" ]
-	then
-		sudo apt-get install acl
 		echo "Please follow the rest of these steps online, I can't write a script that will handle all the special cases: https://help.ubuntu.com/community/FilePermissionsACLs#Enabling_ACLs_in_the_Filesystem
 		"
 		echo "Please run the following commands after finishing these steps: "
@@ -112,11 +102,20 @@ then
 		echo "sudo setfacl -m other:--- $INSTALL_LOCATION/$CE_NAME"
 		echo "sudo mkdir $INSTALL_LOCATION/$CE_NAME/home_directories"
 	else
-
 		echo "Appliying ACL rights."
-		sudo setfacl -m g:users:rwx $INSTALL_LOCATION/$CE_NAME
-		sudo setfacl -m other:--- $INSTALL_LOCATION/$CE_NAME
-		sudo mkdir $INSTALL_LOCATION/$CE_NAME/home_directories
+		setfacl -m g:users:rwx $INSTALL_LOCATION/$CE_NAME
+		setfacl -m other:--- $INSTALL_LOCATION/$CE_NAME
+		mkdir $INSTALL_LOCATION/$CE_NAME/home_directories
+	fi
+
+	if [ "$SUDOERS_ADD" = "yes" ]
+	then
+		echo "Adding mcloud-user-addition to sudoers file, so users can run it with sudo permissions"
+		echo "This script will add this line to the sudoers file: "
+		echo "%users ALL=NOPASSWD: /usr/bin/mcloud-user-addition"
+		echo "So normal 'users' can run the addUserToRepo script without being asked for a sudo password"
+
+		echo "%users ALL=NOPASSWD: /usr/bin/mcloud-user-addition" | (EDITOR="tee -a" visudo)
 	fi
 
 	echo "Saving MCLOUD_CONFIG_SERVER file.."
@@ -130,17 +129,16 @@ HOME_DIRECTORY=\"$INSTALL_LOCATION/$CE_NAME/home_directories\"
 " > $CONFIG_FILE_NAME
 
 
-	echo "Installation of MCLOUD is finished"
-	echo "Use the following commands: mcloud"
+echo "Installation of MCLOUD is finished"
+echo "Use the following commands: mcloud"
 
 else
 ##############################
 ##### MCLOUD CLIENT ##########
 ##############################
-	sudo rm /usr/bin/mcloud-server
-	sudo rm /usr/bin/openvpn-install
-	sudo mv /usr/bin/mcloud-client /usr/bin/mcloud
-	sudo mkdir -p /etc/mcloud-config/
+	rm -f /usr/bin/mcloud-server
+	mv /usr/bin/mcloud-client /usr/bin/mcloud
+	mkdir -p /etc/mcloud-config/
 
 	CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-client.conf"
 
@@ -153,7 +151,7 @@ else
 	db_get mcloud/client-peer_name
 	PE_NAME=$RET
 
-	sudo modprobe dm-mod
+	modprobe dm-mod
 
 
 	if [ -d "$INSTALL_LOCATION" ]; then
@@ -175,17 +173,17 @@ else
 
 	#format encrypted
 	echo "Format encrypted image..."
-	sudo cryptsetup luksFormat $PE_NAME.img $PE_NAME.keyfile
+	cryptsetup luksFormat $PE_NAME.img $PE_NAME.keyfile
 
 
 
 	#create mkfs4 partition
 	echo "Opening image..."
-	sudo cryptsetup luksOpen $PE_NAME.img $PE_NAME --key-file $PE_NAME.keyfile
+	cryptsetup luksOpen $PE_NAME.img $PE_NAME --key-file $PE_NAME.keyfile
 
 
 	echo "Creating mkfs4 partition..."
-	sudo mkfs.ext4 /dev/mapper/$PE_NAME
+	mkfs.ext4 /dev/mapper/$PE_NAME
 
 	#mount to directory
 
@@ -193,9 +191,9 @@ else
 	mkdir $INSTALL_LOCATION/$PE_NAME
 
 	echo "Mounting encrypted mapper..."
-	sudo mount /dev/mapper/$PE_NAME $INSTALL_LOCATION/$PE_NAME
+	mount /dev/mapper/$PE_NAME $INSTALL_LOCATION/$PE_NAME
 
-	sudo mkdir $INSTALL_LOCATION/$PE_NAME/CENTRAL_SERVER
+	mkdir $INSTALL_LOCATION/$PE_NAME/CENTRAL_SERVER
 
 	echo "
 	LOCATION_MOUNTPOINT=\"$INSTALL_LOCATION/$PE_NAME\"

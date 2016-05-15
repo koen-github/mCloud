@@ -1,4 +1,0 @@
-#!/bin/sh
-
-echo "Closing encrypted container..."
-mcloud closeEncryptedContainer

@@ -1,0 +1,34 @@
+#!/bin/sh
+
+
+CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-server.conf"
+
+CONFIG_CONTENTS=`cat $CONFIG_FILE_NAME`
+
+if [ ! -f $CONFIG_FILE_NAME ]; then
+			echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
+			exit 1;
+fi
+
+eval $CONFIG_CONTENTS
+
+
+echo "Closing encrypted container..."
+sudo umount $LOCATION_MOUNTPOINT
+echo "Closing encrypted luksvolume"
+sudo cryptsetup luksClose $LOCAL_FILE_CONTAINER
+
+echo "Removing old config files..."
+
+rm -f /etc/mcloud-config/mcloud-client.conf
+rm -f /etc/mcloud-config/mcloud-server.conf
+rm -f -R /etc/mcloud-config/
+
+echo "Removing old binaries files..."
+rm -f /usr/bin/mcloud
+rm -f /usr/bin/mcloud-client
+rm -f /usr/bin/mcloud-server
+rm -f /usr/bin/mcloud-user-addition
+
+echo "Purging debconf mcloud..."
+echo PURGE | debconf-communicate mcloud

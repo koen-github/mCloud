@@ -10,35 +10,19 @@ CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-client.conf"
 
 CONFIG_CONTENTS=`cat $CONFIG_FILE_NAME`
 
-assignUser() {
-	echo "Todo: assigning user to github repo on central server"
-}
+if [ ! -f $CONFIG_FILE_NAME ]; then
+		echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
+		exit 1;
+fi
+eval $CONFIG_CONTENTS
 
 disconnectClientServer() {
-	if [ ! -f $CONFIG_FILE_NAME ]; then
-	    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
-	    exit 1;
-	fi
-	eval $CONFIG_CONTENTS
-	echo "Disconnecting OpenVPN connection"
-	sudo killall openvpn
-
 	echo "Unmounting SSH mountpoint and tunnel"
 	sudo umount $LOCATION_SSHFS_MOUNTPOINT
 	sudo killall ssh
 }
 
 connectClientServer() {
-	if [ ! -f $CONFIG_FILE_NAME ]; then
-	    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
-	    exit 1;
-	fi
-	eval $CONFIG_CONTENTS
-	echo "Opening client config file... "
-	exec 3< <(sudo /usr/sbin/openvpn --config $OPENVPN_CONFIG)
-	sed '/Initialization Sequence Completed$/q' <&3 ; cat <&3 &
-
-	echo "OPENVPN is connected"
 
 	echo "Calling mCloud server and creating tunnel"
 
@@ -48,14 +32,28 @@ connectClientServer() {
 
 }
 
+
+assignUser() {
+	echo "This script will run a remote script on the central peer server"
+	echo "Name of the repo"
+	read REPO_NAME
+
+	echo "Users, seperated by ; without spaces"
+	read USERS
+
+	ssh $USER@$CENTRAL_IP -o IdentityFile=$USER_RSA_FILE -p 22 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no "sudo /usr/bin/mcloud-user-addition $REPO_NAME $USERS"
+
+	echo "Reconnecting client and Server"
+	disconnectClientServer()
+	connectClientServer()
+
+
+
+}
+
+
 assignServer() {
 	echo "Assigning this client to a mCloud server"
-	if [ ! -f $CONFIG_FILE_NAME ]; then
-	    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
-	    exit 1;
-	fi
-
-	eval $CONFIG_CONTENTS
 
 	if [ -z "$USER_RSA_FILE" ]; then
 		echo "Generating ssh key"
@@ -66,11 +64,11 @@ assignServer() {
 		echo "Getting contents of ssh key... ~/.ssh/id_rsa.pub"
 		echo "YOUR SSH KEY: "
 		cat ~/.ssh/id_rsa.pub
-		echo "You will receive an ovpn file from the mCloud server, place that one in your home directory. Rename it to: mcloudServer.ovpn"
-		sudo sh -c "echo \"OPENVPN_CONFIG=\"$HOME/mcloudServer.ovpn\"\" >> $CONFIG_FILE_NAME"
+		echo "What is the central server ip? (e.g. 95.234.12.65) (ask your central administrator): "
+		read CE_IP
 		sudo sh -c "echo \"USER=\"$USER\"\" >> $CONFIG_FILE_NAME"
 		sudo sh -c "echo \"USER_RSA_FILE=\"/home/$USER/.ssh/id_rsa\"\" >> $CONFIG_FILE_NAME"
-		sudo sh -c "echo \"CENTRAL_IP=\"10.8.0.1\"\" >> $CONFIG_FILE_NAME"
+		sudo sh -c "echo \"CENTRAL_IP=\"$CE_IP\"\" >> $CONFIG_FILE_NAME"
 	else
 		echo "You already generated an rsa file, please contact mCloud server for the IP-address and the OpenVPN config file"
 		echo "Contents of RSA key: "
@@ -81,23 +79,12 @@ assignServer() {
 
 }
 
-removeMCLOUD() {
-	echo "TODO: Removing MCLOUD package"
-}
-
 #########################
 # OPENING MCLOUD IMAGE  #
 #########################
 openEncryptedContainer() {
-
-	if [ ! -f $CONFIG_FILE_NAME ]; then
-	    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
-	    exit 1;
-	fi
-
 	echo "Opening and mounting the already created mCloud instance.."
 
-	eval $CONFIG_CONTENTS
 	echo "Opening the image file: $IMAGE_FILE..."
 	sudo cryptsetup luksOpen $IMAGE_FILE $LOCAL_FILE_CONTAINER --key-file $KEY_FILE
 	echo "Mounting encrypted container..."
@@ -111,14 +98,7 @@ openEncryptedContainer() {
 #########################
 closeEncryptedContainer() {
 
-	if [ ! -f $CONFIG_FILE_NAME ]; then
-	    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
-	    exit 1;
-	fi
-
 	echo "Closing the already mounted mCloud image."
-
-	eval $CONFIG_CONTENTS
 	echo "Umounting mountpoint: $LOCATION_MOUNTPOINT"
 	sudo umount $LOCATION_MOUNTPOINT
 	echo "Closing encrypted luksvolume"

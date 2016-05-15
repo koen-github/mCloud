@@ -5,7 +5,7 @@
 
 # Ask questions
 db_input high mcloud/mcloudType || true
- 
+
 # Show interface
 db_go || true
 
@@ -18,14 +18,13 @@ then
 db_input high mcloud/server-install_path || true
 db_input high mcloud/server-image_size || true
 db_input high mcloud/server-image_name || true
-db_input high mcloud/server-openvpn || true
 db_input high mcloud/server-acl_system || true
+db_input high mcloud/server-sudoers || true
 db_go || true
-else 
+else
 db_input high mcloud/client-install_path || true
 db_input high mcloud/client-image_size || true
 db_input high mcloud/client-peer_name || true
 db_go || true
 
 fi
- 

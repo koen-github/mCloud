@@ -8,19 +8,20 @@ CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-server.conf"
 
 CONFIG_CONTENTS=`cat $CONFIG_FILE_NAME`
 
+if [ ! -f $CONFIG_FILE_NAME ]; then
+			echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
+			exit 1;
+fi
+
+eval $CONFIG_CONTENTS
+
 
 addUser() {
-	if [ ! -f $CONFIG_FILE_NAME ]; then
-		    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
-		    exit 1;
-	fi
-
-	eval $CONFIG_CONTENTS
 
 	echo "Add user to central peer using SSH-KEY PAIR"
 	echo "Please make sure you changed the ssh config file to only allow ssh-key pair login"
 
-	if [ -z "$HOME_DIRECTORY" ]; then 
+	if [ -z "$HOME_DIRECTORY" ]; then
 
 		echo "Specify the location to all the home directories of the user"
 		read HOME_LOCATION
@@ -76,22 +77,28 @@ addUser() {
 }
 
 removeUser() {
-	echo "TODO: Removing user from central peer"
+	echo "This will remove the user from the central server and also delete the home directory. After this the user can no longer access this central server."
+
+	echo "What user do you want to remove, specify username? (e.g. kip)"
+	read USER_DELETE
+
+	USER_HOME=`eval echo ~$USER_DELETE`
+	echo "Is the home directory?: $USER_HOME"
+	sudo userdel $USER_DELETE --remove
+
+	echo "SSH server restarting"
+	/etc/init.d/ssh restart
+
+	echo "====NOTE==== You have to remove the user from the exports file: /etc/exports. To make sure there is no more NFS access."
 }
 
 #########################
 # OPENING MCLOUD IMAGE  #
 #########################
 openEncryptedContainer() {
-	echo "Opening and mounting the already created mCloud instance.."
-	if [ ! -f $CONFIG_FILE_NAME ]; then
-	    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
-	    exit 1;
-	fi
-	
+
 	echo "Opening and mounting the already created mCloud instance.."
 
-	eval $CONFIG_CONTENTS
 	echo "Opening the image file: $IMAGE_FILE..."
 	sudo cryptsetup luksOpen $IMAGE_FILE $LOCAL_FILE_CONTAINER --key-file $KEY_FILE
 	echo "Mounting encrypted container..."
@@ -105,16 +112,11 @@ openEncryptedContainer() {
 #########################
 closeEncryptedContainer() {
 	echo "Closing the already mounted mCloud image."
-	if [ ! -f $CONFIG_FILE_NAME ]; then
-	    echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
-	    exit 1;
-	fi
 
-	eval $CONFIG_CONTENTS
 	echo "Umounting mountpoint: $LOCATION_MOUNTPOINT"
 	sudo umount $LOCATION_MOUNTPOINT
 	echo "Closing encrypted luksvolume"
-	sudo cryptsetup luksClose $LOCAL_FILE_CONTAINER 
+	sudo cryptsetup luksClose $LOCAL_FILE_CONTAINER
 	echo "Mountpoint is closed"
 }
 
@@ -155,7 +157,7 @@ do
       -*)
           echo "Error: Unknown option: $1" >&2
           ## or call function display_help
-          exit 1 
+          exit 1
           ;;
       *)  # No more options
           break
@@ -163,7 +165,7 @@ do
     esac
 done
 
-###################### 
+######################
 # Check if parameter #
 # is set too execute #
 ######################
@@ -181,7 +183,7 @@ case "$1" in
     closeEncryptedContainer  ##added
     ;;
   *)
-	
+
 
      display_help
      exit 1
