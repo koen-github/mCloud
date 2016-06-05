@@ -1,0 +1,140 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+
+\newcommand{\shellcmd}[1]{\\\indent\indent\texttt{\footnotesize\# #1}\\}
+
+\title{Installation Manual - mCloud\\Version 1}
+\author{Koen van der Kruk}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+\section{Introduction}
+This document will describe the installation of a custom created cloud storage by Koen van der Kruk in collaboration with Nanquanu (cg?). 
+
+This tutorial can be used for server- and client side usage with mCloud. Choose the right section for your own needs. 
+
+The latest mCloud version can be found at the following place:
+
+\url{https://github.com/koen-github/mCloud}
+
+I am not responsible for any damage that possibly can happen when using this tutorial, including the usage of mCloud. 
+I test all the steps in a virtualbox machine running 'Debian GNU/Linux 8 (jessie) 64-bit'
+
+
+
+\textbf{I recommend to firstly try to successfully setup a full working mCloud in a virtualbox, and later try to install it in your normal workspace.
+Note: Make sure to read also the text BEFORE you run the unix-command. Sometimes the command has to be changed to fill in the specific needs of your own setup.}
+
+
+
+\section{Requirements}
+I assume you have the at least a Debian distribution running like: Ubuntu, Linux Mint, Xubuntu or Debian. 
+
+\begin{itemize}
+    \item A PC running a debian distribution
+    \item Internet Connection
+    \item Some linux knowledge about running commands in terminal and googling your own problems.
+    \item Central server system also containing mCloud
+    \item As client and server it's required to have full administrator (root) rights onto your box.
+\end{itemize}
+\section{Installation}
+You can choose what kind of mCLoud installation you want. If you're just a normal user who has been ordered to install mCloud on your local machine, you can choose for Client Side installation.  
+
+\subsection{Installation - Server Side}
+As admin you probably know a lot about ubuntu and debian, but I will still explain every step.
+Start by opening a new terminal.
+
+\begin{enumerate}
+     
+    \item Clone the mCloud repository in a new and clean directory.
+    \shellcmd{git clone git@github.com:koen-github/mCloud.git}
+    \item Change directory into mCloud using
+    \shellcmd{cd mCloud/}
+    \item First make sure you have all the dependencies installed on your PC:
+    \shellcmd{sudo apt-get install sshfs lvm2 cryptsetup openssh-server openssh-client nfs-kernel-server nfs-common portmap acl}
+    \item Now install the debian package in the mCloud/ folder. Run this command:
+    \shellcmd{sudo dpkg -i mcloud-*.deb}
+    
+    \item Open a new terminal, so do not yet follow the steps onscreen of the dpkg installer.
+    
+    \item Create a new directory in your home folder where you want to locate the mCloud encrypted image.
+    Change IMAGE\_MCLOUD to something of your own!
+    \shellcmd{mkdir IMAGE\_MCLOUD}
+    
+    \item Go back to the installation window of mCloud, choose 'server' and press Enter.
+    \item Go inside the newly created folder of IMAGE\_MCLOUD with: \shellcmd{cd IMAGE\_MCLOUD}
+    
+    \item Get the full installation path of mCloud using this command \shellcmd{pwd} This will return something like: 
+    \shellcmd{/home/koen/IMAGE\_MCLOUD}
+    
+    \item Paste it into the installation window of mCloud and press Enter.
+    
+    \item Type into the installation window the image size, like: 100M, 200M or something larger and press Enter
+    
+    \item Type in a name of your mCloud image and press enter
+    
+    \item Choose YES to setup mCloud with ACL permissions and press Enter. \textbf{After the installation is finished, you have to follow these steps online:}
+    \url{https://help.ubuntu.com/community/FilePermissionsACLs#Enabling_ACLs_in_the_Filesystem}
+    
+    \textbf{After you followed these steps, you have to run the commands specified on the terminal.}
+    
+    
+    \item Add mcloud-users to your sudoers, so users can create their own groups of people with own repositories and press Enter.
+    
+    \item Now carefully read the log in the terminal to make sure you finished all the steps. 
+    
+\end{enumerate}
+
+
+\subsection{Installation - Client Side}
+This is a step for step guide to install mCloud on your local machine as normal user.
+
+\begin{enumerate}
+    \item Clone the mCloud repository in a new and clean directory.
+    \shellcmd{git clone git@github.com:koen-github/mCloud.git}
+    \item Change directory into mCloud using
+    \shellcmd{cd mCloud/}
+    \item First make sure you have all the dependencies installed on your PC:
+    \shellcmd{sudo apt-get install sshfs lvm2 cryptsetup openssh-server openssh-client nfs-kernel-server nfs-common portmap acl}
+    \item Now install the debian package in the mCloud/ folder. Run this command:
+    \shellcmd{sudo dpkg -i mcloud-*.deb}
+    
+    \item Open a new terminal, so do not yet follow the steps onscreen of the dpkg installer.
+    
+    \item Create a new directory in your home folder where you want to locate the mCloud encrypted image.
+    Change IMAGE\_MCLOUD to something of your own!
+    \shellcmd{mkdir IMAGE\_MCLOUD}
+    
+    \item Go back to the installation window of mCloud, choose 'client' and press Enter.
+    \item Go inside the newly created folder of IMAGE\_MCLOUD with: \shellcmd{cd IMAGE\_MCLOUD}
+    
+    \item Get the full installation path of mCloud using this command \shellcmd{pwd} This will return something like: 
+    \shellcmd{/home/koen/IMAGE\_MCLOUD}
+    
+    \item Paste it into the installation window of mCloud and press Enter.
+    
+    \item Type into the installation window the image size, like: 100M, 200M or something larger and press Enter
+    
+    \item Type in a name of your mCloud image and press enter
+    
+    \item Now carefully read the log in the terminal to make sure you finished all the steps. 
+\end{enumerate}
+
+\subsubsection{Make connection}
+To setup a connection to a central server, run this command:  \shellcmd{mcloud assignServer} 
+
+Generate a new SSH key pair on the default location, if you already have one you can send that one out to the central server.
+
+You also have to know the IP of the central server. 
+
+Wait for the server admin to apply your rights on the central server.
+
+
+\end{document}
