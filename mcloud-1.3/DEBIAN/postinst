@@ -205,7 +205,7 @@ else
 	" > $CONFIG_FILE_NAME
 
 	echo "Install completed, please connect this client to the central server."
-	echo "Now run this script anytime you like to connect to a central mCLoud server using: mcloud assignserver"
+	echo "Now run this script anytime you like to connect to a central mCLoud server using: mcloud assignServer"
 
 
 
