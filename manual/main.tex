@@ -16,7 +16,7 @@
 
 \newpage
 \section{Introduction}
-This document will describe the installation of a custom created cloud storage by Koen van der Kruk in collaboration with Nanquanu (cg?). 
+This document will describe the installation of a custom created cloud storage by Koen van der Kruk in collaboration with Nanquanu. 
 
 This tutorial can be used for server- and client side usage with mCloud. Choose the right section for your own needs. 
 
@@ -25,7 +25,7 @@ The latest mCloud version can be found at the following place:
 \url{https://github.com/koen-github/mCloud}
 
 I am not responsible for any damage that possibly can happen when using this tutorial, including the usage of mCloud. 
-I test all the steps in a virtualbox machine running 'Debian GNU/Linux 8 (jessie) 64-bit'
+I tested all the steps in a virtualbox machine running 'Debian GNU/Linux 8 (jessie) 64-bit'
 
 
 
@@ -35,7 +35,7 @@ Note: Make sure to read also the text BEFORE you run the unix-command. Sometimes
 
 
 \section{Requirements}
-I assume you have the at least a Debian distribution running like: Ubuntu, Linux Mint, Xubuntu or Debian. 
+I assume you have at least a Debian distribution running like: Ubuntu, Linux Mint, Xubuntu or Debian. 
 
 \begin{itemize}
     \item A PC running a debian distribution
@@ -135,6 +135,59 @@ Generate a new SSH key pair on the default location, if you already have one you
 You also have to know the IP of the central server. 
 
 Wait for the server admin to apply your rights on the central server.
+
+\subsubsection{Open Connection}
+To connect your local system with the remote central server, it's necessary to first assign a server (see above). If the central server has accepted your SSH key and created a new account on the central server, it's time to fire up the following command:
+\shellcmd{mcloud connectClientServer}
+
+This will create a connection between the client and the server.
+
+\subsubsection{Close Connection}
+
+When you don't want be connected anymore to the central server, you can close up the connection.
+Use the following command:
+\shellcmd{mcloud disconnectClientServer}
+
+\subsubsection{Assign User}
+
+As client it's possible to assign a user to a project you want to work on. You can work together with other users sharing a common git repository. 
+
+Run this command: 
+\shellcmd{mcloud assignUser}
+
+\begin{enumerate}
+\item Fill in the form, create a repository with a good name, so only containing letters, numbers and underscores.
+\item Second specify the list of users you want to work with. The users must be ; separated
+\item When the script is finished, reconnect with the Server and the Client. After that you can work together in a new repository.
+\end{enumerate}
+
+
+
+
+
+
+
+\newpage
+
+\subsection{Delete mCloud}
+
+If you want to remove mCloud from your system, without removing the created image and ssh keys, you can just run the following linux command:
+\shellcmd{sudo dpkg -r mcloud}
+
+
+\subsection{Open Encrypted Container}
+
+After successfully installing the mCloud binaries to your local system, you can run the command:
+\shellcmd{mcloud openEncryptedContainer}
+This will open the encrypted file container for further usage with the mCloud system. Make sure you have the right settings in your mCloud configuration file. If you installed everything according this tutorial, the settings are already correct.
+
+\subsection{Closing Encrypted Container}
+If you want to make sure no one can access the encrypted container it's best to just close it. 
+
+The following command will close the encrypted container.
+\shellcmd{mcloud closeEncryptedContainer}
+
+
 
 
 \end{document}
