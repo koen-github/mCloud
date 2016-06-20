@@ -44,8 +44,8 @@ assignUser() {
 	ssh $USER@$CENTRAL_IP -o IdentityFile=$USER_RSA_FILE -p 22 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no "sudo /usr/bin/mcloud-user-addition $REPO_NAME $USERS"
 
 	echo "Reconnect client and Server using the default commands"
-#	disconnectClientServer()
-#	connectClientServer()
+	disconnectClientServer
+	connectClientServer
 
 
 

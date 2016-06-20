@@ -1,12 +1,12 @@
 #!/bin/sh
 
 
-CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-server.conf"
+CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-*.conf"
 
 CONFIG_CONTENTS=`cat $CONFIG_FILE_NAME`
 
 if [ ! -f $CONFIG_FILE_NAME ]; then
-			echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
+			echo "ERROR: MCLOUD_CONFIG file does not exists, please run setup first."
 			exit 1;
 fi
 
