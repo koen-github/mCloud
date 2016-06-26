@@ -31,9 +31,6 @@ then
 	db_get mcloud/server-image_name
 	CE_NAME=$RET
 
-	db_get mcloud/server-acl_system
-	ACL_SERVER=$RET
-
 	db_get mcloud/server-sudoers
 	SUDOERS_ADD=$RET
 
@@ -91,22 +88,14 @@ then
 	mkdir $INSTALL_LOCATION/$CE_NAME
 
 	echo "Mounting encrypted mapper..."
-	mount /dev/mapper/$CE_NAME $INSTALL_LOCATION/$CE_NAME
+	mount -o acl /dev/mapper/$CE_NAME $INSTALL_LOCATION/$CE_NAME
 
-	if [ "$ACL_SERVER" = "yes" ]
-	then
-		echo "Please follow the rest of these steps online, I can't write a script that will handle all the special cases: https://help.ubuntu.com/community/FilePermissionsACLs#Enabling_ACLs_in_the_Filesystem
-		"
-		echo "Please run the following commands after finishing these steps: "
-		echo "sudo setfacl -m g:users:rwx $INSTALL_LOCATION/$CE_NAME"
-		echo "sudo setfacl -m other:--- $INSTALL_LOCATION/$CE_NAME"
-		echo "sudo mkdir $INSTALL_LOCATION/$CE_NAME/home_directories"
-	else
-		echo "Appliying ACL rights."
-		setfacl -m g:users:rwx $INSTALL_LOCATION/$CE_NAME
-		setfacl -m other:--- $INSTALL_LOCATION/$CE_NAME
-		mkdir $INSTALL_LOCATION/$CE_NAME/home_directories
-	fi
+	echo "Appliying ACL rights."
+	setfacl -m g:users:rwx $INSTALL_LOCATION/$CE_NAME
+	setfacl -m other:--- $INSTALL_LOCATION/$CE_NAME
+
+	echo "Creating home directories for users"
+	mkdir $INSTALL_LOCATION/$CE_NAME/home_directories
 
 	if [ "$SUDOERS_ADD" = "yes" ]
 	then
@@ -191,7 +180,7 @@ else
 	mkdir $INSTALL_LOCATION/$PE_NAME
 
 	echo "Mounting encrypted mapper..."
-	mount /dev/mapper/$PE_NAME $INSTALL_LOCATION/$PE_NAME
+	mount -o acl /dev/mapper/$PE_NAME $INSTALL_LOCATION/$PE_NAME
 
 	mkdir $INSTALL_LOCATION/$PE_NAME/CENTRAL_SERVER
 

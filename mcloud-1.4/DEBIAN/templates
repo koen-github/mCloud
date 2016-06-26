@@ -28,12 +28,6 @@ Template: mcloud/server-image_name
 Type: string
 Description: Central name of image?
 
-Template: mcloud/server-acl_system
-Type: select
-Choices: yes, no
-Default: yes
-Description: Would you like to setup this server with the ACL permissions system?
-
 Template: mcloud/server-sudoers
 Type: select
 Choices: yes, no

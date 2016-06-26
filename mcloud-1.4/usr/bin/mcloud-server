@@ -102,7 +102,7 @@ openEncryptedContainer() {
 	echo "Opening the image file: $IMAGE_FILE..."
 	sudo cryptsetup luksOpen $IMAGE_FILE $LOCAL_FILE_CONTAINER --key-file $KEY_FILE
 	echo "Mounting encrypted container..."
-	sudo mount /dev/mapper/$LOCAL_FILE_CONTAINER $LOCATION_MOUNTPOINT
+	sudo mount -o acl /dev/mapper/$LOCAL_FILE_CONTAINER $LOCATION_MOUNTPOINT
 	echo "Mountpoint is attached"
 }
 
