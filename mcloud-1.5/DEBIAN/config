@@ -15,12 +15,16 @@ ANSWER1=$RET
 
 if [ "$ANSWER1" = "server" ]
 then
+#asking questions for server installation
+#questions are defined in templates file.
 db_input high mcloud/server-install_path || true
 db_input high mcloud/server-image_size || true
 db_input high mcloud/server-image_name || true
 db_input high mcloud/server-sudoers || true
 db_go || true
 else
+#asking questions for client installation
+#questions are defined in templates file.
 db_input high mcloud/client-install_path || true
 db_input high mcloud/client-image_size || true
 db_input high mcloud/client-peer_name || true

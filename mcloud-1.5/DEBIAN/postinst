@@ -5,7 +5,7 @@
 
 # Fetching configuration from debconf
 db_get mcloud/mcloudType
-ANSWER1=$RET
+ANSWER1=$RET #determine if the user selected server or client as installation type.
 
 
 if [ "$ANSWER1" = "server" ]
@@ -14,53 +14,48 @@ then
 
 	CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-server.conf"
 
-	db_get mcloud/server-install_path
-	INSTALL_LOCATION=$RET
+	db_get mcloud/server-install_path #getting sever installation path from question database.
+	INSTALL_LOCATION=$RET #latest return value is the answer
 
   echo " INSTALL LOCATION: $INSTALL_LOCATION" ;
-  if [ -d "$INSTALL_LOCATION" ]; then
+  if [ -d "$INSTALL_LOCATION" ]; then #checking if installation location is directory
     cd $INSTALL_LOCATION
   else
-    echo "ERROR: Install location is not a DIR"
+    echo "ERROR: Install location is not a DIR" #not a directory so exiting installation.
     exit -1;
   fi
 
-	db_get mcloud/server-image_size
+	db_get mcloud/server-image_size #retrieving image size from database
 	IMAGE_SIZE=$RET
 
-	db_get mcloud/server-image_name
+	db_get mcloud/server-image_name #retrieving image name  from database
 	CE_NAME=$RET
 
-	db_get mcloud/server-sudoers
+	db_get mcloud/server-sudoers #retrieving answer for sudoers file from database
 	SUDOERS_ADD=$RET
 
 
-	modprobe dm-mod
+	modprobe dm-mod #reloading kernel with dm-mod
+	modprobe nfs #reloding kernel with nfs
 
 	echo "Creating Mcloud config file..."
 
-	mkdir -p /etc/mcloud-config/
+	mkdir -p /etc/mcloud-config/ #creating config directory
 
 	touch $CONFIG_FILE_NAME
-	cp /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
+	cp /etc/ssh/sshd_config /etc/ssh/sshd_config.orig #backing up previous sshd config file.
 
 	echo "Settings SSHD config parameters..."
 	sh -c "echo \"PermitRootLogin 		no\" >> /etc/ssh/sshd_config"
 	sh -c "echo \"PasswordAuthentication 	no\" >> /etc/ssh/sshd_config"
 	sh -c "echo \"UsePAM			yes\" >> /etc/ssh/sshd_config"
 
-	rm -f /usr/bin/mcloud-client
-	rm -f /usr/bin/mcloud
+	rm -f /usr/bin/mcloud-client #removing previous mcloud installation files
+	rm -f /usr/bin/mcloud #removing previous mcloud installation files
 
+	mv /usr/bin/mcloud-server /usr/bin/mcloud #renaming mcloud-server to mcloud, so users can just type: mcloud in the terminal
 
-	LOCAL_IP=`hostname -I | cut -f1 -d' '`
-
-	CURRENT_RUN=`pwd`
-
-
-	mv /usr/bin/mcloud-server /usr/bin/mcloud
-
-	#create image of 100MB
+	#create image of IAMGE_SIZE
 	echo "Creating image..."
 	dd if=/dev/zero of=$CE_NAME.img bs=1 count=0 seek=$IMAGE_SIZE
 
@@ -74,28 +69,27 @@ then
 	echo "Format encrypted image..."
 	cryptsetup luksFormat $CE_NAME.img $CE_NAME.keyfile
 
-	#create mkfs4 partition
+	#opening the image
 	echo "Opening image..."
 	cryptsetup luksOpen $CE_NAME.img $CE_NAME --key-file $CE_NAME.keyfile
 
-
+	#create mkfs4 partition
 	echo "Creating mkfs4 partition..."
 	mkfs.ext4 /dev/mapper/$CE_NAME
 
 	#mount to directory
-
 	echo "Creating install directory..."
 	mkdir $INSTALL_LOCATION/$CE_NAME
 
 	echo "Mounting encrypted mapper..."
-	mount -o acl /dev/mapper/$CE_NAME $INSTALL_LOCATION/$CE_NAME
+	mount -o acl /dev/mapper/$CE_NAME $INSTALL_LOCATION/$CE_NAME #mounting with ACL option, so we can use the extend permission system for linux based distrbutions.
 
 	echo "Appliying ACL rights."
-	setfacl -m g:users:rwx $INSTALL_LOCATION/$CE_NAME
-	setfacl -m other:--- $INSTALL_LOCATION/$CE_NAME
+	setfacl -m g:users:rwx $INSTALL_LOCATION/$CE_NAME #giving group 'users' read and write access in the root directory of mcloud
+	setfacl -m other:--- $INSTALL_LOCATION/$CE_NAME #making sure other types of users can not access this location.
 
 	echo "Creating home directories for users"
-	mkdir $INSTALL_LOCATION/$CE_NAME/home_directories
+	mkdir $INSTALL_LOCATION/$CE_NAME/home_directories #creating home directory for mcloud users.
 
 	if [ "$SUDOERS_ADD" = "yes" ]
 	then
@@ -104,46 +98,46 @@ then
 		echo "%users ALL=NOPASSWD: /usr/bin/mcloud-user-addition"
 		echo "So normal 'users' can run the addUserToRepo script without being asked for a sudo password"
 
-		echo "%users ALL=NOPASSWD: /usr/bin/mcloud-user-addition" | (EDITOR="tee -a" visudo)
+		echo "%users ALL=NOPASSWD: /usr/bin/mcloud-user-addition" | (EDITOR="tee -a" visudo) #adding mcloud user addition to sudoers file. Users can now create their own groups of people and repositories.
 	fi
 
 	echo "Saving MCLOUD_CONFIG_SERVER file.."
 
-echo "
-LOCATION_MOUNTPOINT=\"$INSTALL_LOCATION/$CE_NAME\"
-LOCAL_FILE_CONTAINER=\"$CE_NAME\"
-IMAGE_FILE=\"$INSTALL_LOCATION/$CE_NAME.img\"
-KEY_FILE=\"$INSTALL_LOCATION/$CE_NAME.keyfile\"
-HOME_DIRECTORY=\"$INSTALL_LOCATION/$CE_NAME/home_directories\"
-" > $CONFIG_FILE_NAME
+	echo "
+	LOCATION_MOUNTPOINT=\"$INSTALL_LOCATION/$CE_NAME\"
+	LOCAL_FILE_CONTAINER=\"$CE_NAME\"
+	IMAGE_FILE=\"$INSTALL_LOCATION/$CE_NAME.img\"
+	KEY_FILE=\"$INSTALL_LOCATION/$CE_NAME.keyfile\"
+	HOME_DIRECTORY=\"$INSTALL_LOCATION/$CE_NAME/home_directories\"
+	" > $CONFIG_FILE_NAME #writing all configuriation paramaters to the global mcloud config file.
 
 
-echo "Installation of MCLOUD is finished"
-echo "Use the following commands: mcloud"
+	echo "Installation of MCLOUD is finished"
+	echo "Use the following commands: mcloud" #letting the user know the script is done.
 
 else
 ##############################
 ##### MCLOUD CLIENT ##########
 ##############################
-	rm -f /usr/bin/mcloud-server
+	rm -f /usr/bin/mcloud-server #removing previous mcloud installations.
 	mv /usr/bin/mcloud-client /usr/bin/mcloud
-	mkdir -p /etc/mcloud-config/
+	mkdir -p /etc/mcloud-config/ #creating the config directory if not exists.
 
 	CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-client.conf"
 
 	db_get mcloud/client-install_path
-	INSTALL_LOCATION=$RET
+	INSTALL_LOCATION=$RET #retrieving installation location.
 
 	db_get mcloud/client-image_size
-	IMAGE_SIZE=$RET
+	IMAGE_SIZE=$RET #retrieving image size for mcloud client side.
 
 	db_get mcloud/client-peer_name
-	PE_NAME=$RET
+	PE_NAME=$RET #getting client peer name of the iamge.
 
 	modprobe dm-mod
 
 
-	if [ -d "$INSTALL_LOCATION" ]; then
+	if [ -d "$INSTALL_LOCATION" ]; then #checking if install path is a directortory
 	  cd $INSTALL_LOCATION
 	else
 	  echo "ERROR: Install location is not a DIR"
@@ -180,7 +174,7 @@ else
 	mkdir $INSTALL_LOCATION/$PE_NAME
 
 	echo "Mounting encrypted mapper..."
-	mount -o acl /dev/mapper/$PE_NAME $INSTALL_LOCATION/$PE_NAME
+	mount -o acl /dev/mapper/$PE_NAME $INSTALL_LOCATION/$PE_NAME #mounting the encrypted image with ACL option.
 
 	mkdir $INSTALL_LOCATION/$PE_NAME/CENTRAL_SERVER
 
@@ -191,7 +185,7 @@ else
 	IMAGE_FILE=\"$INSTALL_LOCATION/$PE_NAME.img\"
 	KEY_FILE=\"$INSTALL_LOCATION/$PE_NAME.keyfile\"
 	HOME_DIRECTORY=\"$INSTALL_LOCATION/$PE_NAME/home_directories\"
-	" > $CONFIG_FILE_NAME
+	" > $CONFIG_FILE_NAME #writing config file with parameters.
 
 	echo "Install completed, please connect this client to the central server."
 	echo "Now run this script anytime you like to connect to a central mCLoud server using: mcloud assignServer"

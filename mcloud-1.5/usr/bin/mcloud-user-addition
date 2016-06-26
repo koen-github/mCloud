@@ -1,0 +1,53 @@
+#!/bin/bash
+
+CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-server.conf"
+
+CONFIG_CONTENTS=`cat $CONFIG_FILE_NAME`
+
+if [ ! -f $CONFIG_FILE_NAME ]; then #check if config file exists.
+			echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
+			exit 1;
+fi
+
+eval $CONFIG_CONTENTS #applying the configuration parameters.
+
+echo "Use this script as /usr/bin/mcloud-user-addition REPO_NAME LIST_OF_USERS_SEPERATED_BY;"
+echo "Or open and follow steps"
+echo "Warning, this script must be run as root, or use the sudoers script"
+echo "Warning, git repo must be in the top level directory of the main git central"
+if [ -z $1 ] #check if first arguments contains information.
+then
+	echo "Name of the repo"
+	read REPO_NAME #ask for the repository name
+else #use the first argument as input.
+	REPO_NAME=$1
+fi
+
+if [ -z $2 ] #check if second arguments holds information.
+then
+	echo "Users, seperated by ; without spaces"
+	read USERS #ask for user list.
+else #use second argument.
+	USERS=$2
+fi
+
+echo "Creating new user group"
+groupadd group_$REPO_NAME #create a new group of users with the specified users.
+
+export IFS=";" #use as seperator in list.
+
+for user in $USERS; do
+	echo "Addinng user: $user to new group"
+  usermod -G group_$REPO_NAME $user; #looping through every user to add them to the usergroup
+done
+
+echo "Creating shared folder"
+mkdir -p $LOCATION_MOUNTPOINT/$REPO_NAME # create new directory for the repository.
+
+echo "Assigning group to shared folder"
+chgrp -R group_$REPO_NAME $LOCATION_MOUNTPOINT/$REPO_NAME #changing group to newly created group.
+
+echo "Chmodding location"
+chmod 770 -R $LOCATION_MOUNTPOINT/$REPO_NAME #chmodding the directory so only group members can access the directory.
+
+echo "Script is finished, please tell the others!"

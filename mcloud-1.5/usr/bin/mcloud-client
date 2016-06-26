@@ -5,20 +5,20 @@
 LOCATION_OF_SCRIPT=`readlink -f "$0"`
 
 
-USER=`whoami`
-CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-client.conf"
+USER=`whoami` #getting user name
+CONFIG_FILE_NAME="/etc/mcloud-config/mcloud-client.conf" #getting client configuration.
 
 CONFIG_CONTENTS=`cat $CONFIG_FILE_NAME`
 
-if [ ! -f $CONFIG_FILE_NAME ]; then
+if [ ! -f $CONFIG_FILE_NAME ]; then #checking if file exists before running.
 		echo "ERROR: MCLOUD_CONFIG_SERVER file does not exists, please run setup first."
 		exit 1;
 fi
-eval $CONFIG_CONTENTS
+eval $CONFIG_CONTENTS #Yes I know, not secure. But will do for the time being.
 
-disconnectClientServer() {
+disconnectClientServer() { #function to disconnect client and server
 	echo "Unmounting SSH mountpoint and tunnel"
-	sudo umount $LOCATION_SSHFS_MOUNTPOINT
+	sudo umount $LOCATION_SSHFS_MOUNTPOINT #umounting the sshfs mountpoint.
 	sudo killall ssh
 }
 
@@ -26,8 +26,8 @@ connectClientServer() {
 
 	echo "Calling mCloud server and creating tunnel"
 
-	ssh -fNv -L 3049:localhost:2049 $USER@$CENTRAL_IP -o IdentityFile=$USER_RSA_FILE
-	sudo mount -t nfs -o port=3049 localhost:../../ $LOCATION_SSHFS_MOUNTPOINT
+	ssh -fNv -L 3049:localhost:2049 $USER@$CENTRAL_IP -o IdentityFile=$USER_RSA_FILE #Creating SSH tunnel with secure RSA encryption file.
+	sudo mount -t nfs -o port=3049 localhost:../../ $LOCATION_SSHFS_MOUNTPOINT #this may not work correctly on some systems. The error could be: NFS protocol is not supported. Please contact me: koenvdkruk@gmail.com to get a answer.
 	echo "Finished connecting to mCLoud server"
 
 }
@@ -36,14 +36,14 @@ connectClientServer() {
 assignUser() {
 	echo "This script will run a remote script on the central peer server"
 	echo "Name of the repo"
-	read REPO_NAME
+	read REPO_NAME #ask for the repository name of the newly created group with people working together.
 
 	echo "Users, seperated by ; without spaces"
-	read USERS
+	read USERS #ask for a list of users in the group.
 
-	ssh $USER@$CENTRAL_IP -o IdentityFile=$USER_RSA_FILE -p 22 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no "sudo /usr/bin/mcloud-user-addition $REPO_NAME $USERS"
+	ssh $USER@$CENTRAL_IP -o IdentityFile=$USER_RSA_FILE -p 22 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no "sudo /usr/bin/mcloud-user-addition $REPO_NAME $USERS" #passing the arguments to the server to create the group.
 
-	echo "Reconnect client and Server using the default commands"
+	echo "Reconnect client and Server using the default commands" #reconnecting the client and server.
 	disconnectClientServer
 	connectClientServer
 
@@ -55,26 +55,19 @@ assignUser() {
 assignServer() {
 	echo "Assigning this client to a mCloud server"
 
-	if [ -z "$USER_RSA_FILE" ]; then
-		echo "Generating ssh key"
-		ssh-keygen -t rsa
+	echo "Generating ssh key"
+	ssh-keygen -t rsa
 
-		echo "Now email the public ssh key to the central server"
+	echo "Now email the public ssh key to the central server"
 
-		echo "Getting contents of ssh key... ~/.ssh/id_rsa.pub"
-		echo "YOUR SSH KEY: "
-		cat ~/.ssh/id_rsa.pub
-		echo "What is the central server ip? (e.g. 95.234.12.65) (ask your central administrator): "
-		read CE_IP
-		sudo sh -c "echo \"USER=\"$USER\"\" >> $CONFIG_FILE_NAME"
-		sudo sh -c "echo \"USER_RSA_FILE=\"/home/$USER/.ssh/id_rsa\"\" >> $CONFIG_FILE_NAME"
-		sudo sh -c "echo \"CENTRAL_IP=\"$CE_IP\"\" >> $CONFIG_FILE_NAME"
-	else
-		echo "You already generated an rsa file, please contact mCloud server for the IP-address and the OpenVPN config file"
-		echo "Contents of RSA key: "
-		cat ~/.ssh/id_rsa.pub
-		exit 1
-	fi
+	echo "Getting contents of ssh key... ~/.ssh/id_rsa.pub"
+	echo "YOUR SSH KEY: "
+	cat ~/.ssh/id_rsa.pub
+	echo "What is the central server ip? (e.g. 95.234.12.65) (ask your central administrator): "
+	read CE_IP
+	sudo sh -c "echo \"USER=\"$USER\"\" >> $CONFIG_FILE_NAME"  #writing username to config file
+	sudo sh -c "echo \"USER_RSA_FILE=\"/home/$USER/.ssh/id_rsa\"\" >> $CONFIG_FILE_NAME" #writing rsa location to config file.
+	sudo sh -c "echo \"CENTRAL_IP=\"$CE_IP\"\" >> $CONFIG_FILE_NAME" #writing central ip specified by the user to the config file.
 
 
 }
@@ -86,9 +79,9 @@ openEncryptedContainer() {
 	echo "Opening and mounting the already created mCloud instance.."
 
 	echo "Opening the image file: $IMAGE_FILE..."
-	sudo cryptsetup luksOpen $IMAGE_FILE $LOCAL_FILE_CONTAINER --key-file $KEY_FILE
+	sudo cryptsetup luksOpen $IMAGE_FILE $LOCAL_FILE_CONTAINER --key-file $KEY_FILE #opening the image container with the specified key file.
 	echo "Mounting encrypted container..."
-	sudo mount -o acl /dev/mapper/$LOCAL_FILE_CONTAINER $LOCATION_MOUNTPOINT
+	sudo mount -o acl /dev/mapper/$LOCAL_FILE_CONTAINER $LOCATION_MOUNTPOINT #mounting the container with  ACL permission
 	echo "Mountpoint is attached"
 }
 
@@ -100,9 +93,9 @@ closeEncryptedContainer() {
 
 	echo "Closing the already mounted mCloud image."
 	echo "Umounting mountpoint: $LOCATION_MOUNTPOINT"
-	sudo umount $LOCATION_MOUNTPOINT
+	sudo umount $LOCATION_MOUNTPOINT #umounting mountpoint/
 	echo "Closing encrypted luksvolume"
-	sudo cryptsetup luksClose $LOCAL_FILE_CONTAINER
+	sudo cryptsetup luksClose $LOCAL_FILE_CONTAINER #closing encrypted container.
 	echo "Mountpoint is closed"
 }
 
@@ -115,7 +108,7 @@ display_help() {
     echo ""
     echo "Usage: $0 [option...] { connectClientServer | disconnectClientServer | assignServer | openEncryptedContainer | closeEncryptedContainer | assignUser }" >&2
     echo ""
-    echo "   -c, --configuration           Path to configuration file, default file is: /etc/mcloud-config/mcloud-client.conf"
+    echo "   -c, --configuration           (TODO)Path to configuration file, default file is: /etc/mcloud-config/mcloud-client.conf"
     echo "   -h, --help                    Display this help message"
     echo ""
     exit 1
@@ -129,8 +122,8 @@ while :
 do
     case "$1" in
       -c | --configuration)
- 	  echo "Adding config file"
-	  shift 2
+ 	  			echo "Adding config file" #todo, specify other config file.
+	  			shift 2
           ;;
       -h | --help)
           display_help  # Call your function
